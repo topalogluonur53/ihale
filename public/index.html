@@ -17,7 +17,7 @@
   <!-- Remix Icon -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css">
 
-  <link rel="stylesheet" href="/css/style.css?v=5">
+  <link rel="stylesheet" href="/css/style.css?v=6">
 </head>
 <body class="mobile-frame-active">
 
@@ -29,6 +29,9 @@
       <span class="sync-status" id="headerSyncStatus">Katılan & Kazananlar Aktif</span>
     </div>
     <div class="desktop-bar-right">
+      <button class="top-bar-toggle-btn" id="btnToggleMainTopBar" title="Üst Menü Barını Gizle / Aç">
+        <i class="ri-arrow-up-s-line" id="mainTopBarToggleIcon"></i> <span id="mainTopBarToggleText">Üst Menüyü Gizle</span>
+      </button>
       <button class="frame-toggle-btn" id="toggleFrameBtn" title="Görünümü Değiştir">
         <i class="ri-smartphone-line"></i> <span id="frameBtnText">Geniş Ekrana Geç</span>
       </button>
@@ -42,8 +45,15 @@
   <div class="app-viewport-wrapper">
     <main class="app-container" id="appMainContainer">
       
+      <!-- Üst Menü Gizlendiğinde Görünen İnce Açma Şeridi -->
+      <div class="top-menu-restore-strip" id="topMenuRestoreStrip" style="display: none;">
+        <button class="top-menu-restore-btn" id="btnRestoreMainTopBar">
+          <i class="ri-arrow-down-s-line"></i> <span>Üst Menü Barını Aç (Arama & Filtreler)</span>
+        </button>
+      </div>
+
       <!-- Mobil Üst Başlık (Header) -->
-      <header class="mobile-header">
+      <header class="mobile-header" id="mobileHeader">
         <div class="header-status-bar">
           <span class="status-time" id="statusClock">12:00</span>
           <div class="status-icons">
@@ -67,6 +77,9 @@
           </div>
           
           <div class="header-actions">
+            <button class="icon-btn" id="btnToggleMobileTopBar" title="Üst Menüyü Gizle / Alanı Genişlet">
+              <i class="ri-arrow-up-s-line"></i>
+            </button>
             <button class="icon-btn sync-btn" id="btnSyncLive" title="KİK'ten Canlı Veri Çek">
               <i class="ri-refresh-line" id="syncIcon"></i>
             </button>
@@ -299,15 +312,37 @@
         </button>
       </nav>
 
-      <!-- ALT AÇILIR DETAY MODALI (BOTTOM SHEET) -->
+      <!-- ALT AÇILIR DETAY MODALI (GENİŞLETİLEBİLİR KAYAR PENCERE) -->
       <div class="bottom-sheet-overlay" id="detailModalOverlay">
         <div class="bottom-sheet" id="detailSheet">
           <div class="sheet-handle-bar">
             <span class="sheet-handle"></span>
           </div>
-          <div class="sheet-header">
-            <div id="sheetTypeBadge" class="sheet-badge">İhale Sonuç Detayı</div>
-            <button class="close-sheet-btn" id="btnCloseSheet"><i class="ri-close-line"></i></button>
+          <div class="sheet-header" id="sheetHeader">
+            <div class="sheet-header-left">
+              <div id="sheetTypeBadge" class="sheet-badge">İhale Sonuç Detayı</div>
+            </div>
+            <div class="sheet-header-actions">
+              <button class="sheet-action-btn" id="btnToggleSheetHeader" title="Üst Menü Barını Gizle / Aç">
+                <i class="ri-arrow-up-s-line" id="iconToggleSheetHeader"></i>
+                <span id="textToggleSheetHeader">Üst Barı Gizle</span>
+              </button>
+              <button class="sheet-action-btn" id="btnExpandSheet" title="Pencereyi Genişlet / Küçült">
+                <i class="ri-fullscreen-line" id="iconExpandSheet"></i>
+                <span id="textExpandSheet">Genişlet</span>
+              </button>
+              <button class="close-sheet-btn" id="btnCloseSheet" title="Kapat"><i class="ri-close-line"></i></button>
+            </div>
+          </div>
+          <!-- Üst Menü Barı Gizlendiğinde Görünen İnce Geri Açma Barı -->
+          <div class="sheet-collapsed-bar" id="sheetCollapsedBar" style="display: none;">
+            <button class="sheet-restore-btn" id="btnRestoreSheetHeader">
+              <i class="ri-arrow-down-s-line"></i> <span>Üst Menü Barını Aç</span>
+            </button>
+            <div class="sheet-collapsed-right">
+              <button class="sheet-action-btn-mini" id="btnExpandSheetMini" title="Genişlet"><i class="ri-fullscreen-line"></i></button>
+              <button class="close-sheet-btn small" id="btnCloseSheetMini" title="Kapat"><i class="ri-close-line"></i></button>
+            </div>
           </div>
           <div class="sheet-body" id="sheetModalBody">
             <!-- Dinamik detay doldurulacak -->
@@ -324,6 +359,6 @@
     </main>
   </div>
 
-  <script src="/js/app.js?v=4"></script>
+  <script src="/js/app.js?v=5"></script>
 </body>
 </html>

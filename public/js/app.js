@@ -21,7 +21,10 @@ const AppState = {
   cities: [],
   isSyncing: false,
   theme: localStorage.getItem('kik_theme') || 'light',
-  frameActive: true
+  frameActive: true,
+  topMenuCollapsed: false,
+  sheetExpanded: false,
+  sheetHeaderHidden: false
 };
 
 // DOM Elemanları
@@ -37,6 +40,17 @@ const DOM = {
   syncIcon: document.getElementById('syncIcon'),
   toast: document.getElementById('toastMessage'),
   toastText: document.getElementById('toastText'),
+
+  // Ana Ekran ve Üst Menü Kontrolleri
+  appMainContainer: document.getElementById('appMainContainer'),
+  mobileHeader: document.getElementById('mobileHeader'),
+  searchFilterSection: document.getElementById('searchFilterSection'),
+  btnToggleMainTopBar: document.getElementById('btnToggleMainTopBar'),
+  btnToggleMobileTopBar: document.getElementById('btnToggleMobileTopBar'),
+  topMenuRestoreStrip: document.getElementById('topMenuRestoreStrip'),
+  btnRestoreMainTopBar: document.getElementById('btnRestoreMainTopBar'),
+  mainTopBarToggleIcon: document.getElementById('mainTopBarToggleIcon'),
+  mainTopBarToggleText: document.getElementById('mainTopBarToggleText'),
 
   // KPI
   kpiWinnersCount: document.getElementById('kpiWinnersCount'),
@@ -67,12 +81,23 @@ const DOM = {
   favCountPill: document.getElementById('favCountPill'),
   btnClearAllFavorites: document.getElementById('btnClearAllFavorites'),
 
-  // Detay Modalı
+  // Detay Modalı (Genişletilebilir Kayar Pencere)
   detailOverlay: document.getElementById('detailModalOverlay'),
   detailSheet: document.getElementById('detailSheet'),
+  sheetHeader: document.getElementById('sheetHeader'),
   sheetTypeBadge: document.getElementById('sheetTypeBadge'),
   btnCloseSheet: document.getElementById('btnCloseSheet'),
   sheetModalBody: document.getElementById('sheetModalBody'),
+  btnExpandSheet: document.getElementById('btnExpandSheet'),
+  iconExpandSheet: document.getElementById('iconExpandSheet'),
+  textExpandSheet: document.getElementById('textExpandSheet'),
+  btnToggleSheetHeader: document.getElementById('btnToggleSheetHeader'),
+  iconToggleSheetHeader: document.getElementById('iconToggleSheetHeader'),
+  textToggleSheetHeader: document.getElementById('textToggleSheetHeader'),
+  sheetCollapsedBar: document.getElementById('sheetCollapsedBar'),
+  btnRestoreSheetHeader: document.getElementById('btnRestoreSheetHeader'),
+  btnExpandSheetMini: document.getElementById('btnExpandSheetMini'),
+  btnCloseSheetMini: document.getElementById('btnCloseSheetMini'),
 
   // Zaman Kapsamı Etiketleri
   winnersTimeframeLabel: document.getElementById('winnersTimeframeLabel'),
@@ -211,6 +236,20 @@ function setupEventListeners() {
   DOM.detailOverlay.addEventListener('click', (e) => {
     if (e.target === DOM.detailOverlay) closeDetailModal();
   });
+
+  // Üst Menü Barı Gizle / Aç (Ana Sayfa Alan Genişletme)
+  if (DOM.btnToggleMainTopBar) DOM.btnToggleMainTopBar.addEventListener('click', toggleMainTopMenu);
+  if (DOM.btnToggleMobileTopBar) DOM.btnToggleMobileTopBar.addEventListener('click', toggleMainTopMenu);
+  if (DOM.btnRestoreMainTopBar) DOM.btnRestoreMainTopBar.addEventListener('click', toggleMainTopMenu);
+
+  // Kayar Pencere (Detay Modalı) Genişlet / Küçült
+  if (DOM.btnExpandSheet) DOM.btnExpandSheet.addEventListener('click', toggleSheetExpand);
+  if (DOM.btnExpandSheetMini) DOM.btnExpandSheetMini.addEventListener('click', toggleSheetExpand);
+
+  // Kayar Pencere Üst Barı Gizle / Aç
+  if (DOM.btnToggleSheetHeader) DOM.btnToggleSheetHeader.addEventListener('click', toggleSheetHeader);
+  if (DOM.btnRestoreSheetHeader) DOM.btnRestoreSheetHeader.addEventListener('click', toggleSheetHeader);
+  if (DOM.btnCloseSheetMini) DOM.btnCloseSheetMini.addEventListener('click', closeDetailModal);
 
   // Çerçeve / Geniş Ekran Geçişi
   DOM.toggleFrameBtn.addEventListener('click', toggleFrameMode);
@@ -1292,4 +1331,70 @@ function initThemeAndFrame() {
   } else {
     if (DOM.themeToggleBtn) DOM.themeToggleBtn.innerHTML = '<i class="ri-moon-line"></i>';
   }
+}
+
+// ============================================================
+// ÜST MENÜ VE KAYAR PENCERE (DRAWER/MODAL) KONTROLLERİ
+// ============================================================
+
+/**
+ * Ana Ekran Üst Menü Barını Gizle / Aç (Kayar Liste Alanını Genişlet)
+ */
+function toggleMainTopMenu() {
+  AppState.topMenuCollapsed = !AppState.topMenuCollapsed;
+  if (DOM.appMainContainer) {
+    DOM.appMainContainer.classList.toggle('top-menu-collapsed', AppState.topMenuCollapsed);
+  }
+  document.body.classList.toggle('top-menu-collapsed', AppState.topMenuCollapsed);
+  
+  if (DOM.topMenuRestoreStrip) {
+    DOM.topMenuRestoreStrip.style.display = AppState.topMenuCollapsed ? 'flex' : 'none';
+  }
+
+  if (DOM.mainTopBarToggleIcon) {
+    DOM.mainTopBarToggleIcon.className = AppState.topMenuCollapsed ? 'ri-arrow-down-s-line' : 'ri-arrow-up-s-line';
+  }
+  if (DOM.mainTopBarToggleText) {
+    DOM.mainTopBarToggleText.textContent = AppState.topMenuCollapsed ? 'Üst Menüyü Göster' : 'Üst Menüyü Gizle';
+  }
+
+  showToast(AppState.topMenuCollapsed ? 'Üst menü barı gizlendi, liste alanı genişletildi' : 'Üst menü barı açıldı');
+}
+
+/**
+ * Kayar Detay Penceresini Genişlet / Küçült (Tam Ekran Modu)
+ */
+function toggleSheetExpand() {
+  AppState.sheetExpanded = !AppState.sheetExpanded;
+  if (DOM.detailSheet) {
+    DOM.detailSheet.classList.toggle('sheet-expanded', AppState.sheetExpanded);
+  }
+
+  if (DOM.iconExpandSheet) {
+    DOM.iconExpandSheet.className = AppState.sheetExpanded ? 'ri-fullscreen-exit-line' : 'ri-fullscreen-line';
+  }
+  if (DOM.textExpandSheet) {
+    DOM.textExpandSheet.textContent = AppState.sheetExpanded ? 'Küçült' : 'Genişlet';
+  }
+  if (DOM.btnExpandSheetMini) {
+    DOM.btnExpandSheetMini.innerHTML = AppState.sheetExpanded ? '<i class="ri-fullscreen-exit-line"></i>' : '<i class="ri-fullscreen-line"></i>';
+  }
+
+  showToast(AppState.sheetExpanded ? 'Kayar pencere tam ekran genişletildi' : 'Normal pencere boyutu');
+}
+
+/**
+ * Kayar Detay Penceresi Üst Başlık Barını Gizle / Aç
+ */
+function toggleSheetHeader() {
+  AppState.sheetHeaderHidden = !AppState.sheetHeaderHidden;
+  if (DOM.detailSheet) {
+    DOM.detailSheet.classList.toggle('sheet-header-hidden', AppState.sheetHeaderHidden);
+  }
+
+  if (DOM.sheetCollapsedBar) {
+    DOM.sheetCollapsedBar.style.display = AppState.sheetHeaderHidden ? 'flex' : 'none';
+  }
+
+  showToast(AppState.sheetHeaderHidden ? 'Pencere üst barı gizlendi, alan genişletildi' : 'Pencere üst barı açıldı');
 }
