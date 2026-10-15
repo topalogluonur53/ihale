@@ -501,6 +501,9 @@ function checkFilterInfoStrip() {
 }
 
 function switchTab(tabId) {
+  if (typeof closeDetailModal === 'function') {
+    closeDetailModal();
+  }
   AppState.currentTab = tabId;
 
   DOM.navItems.forEach(item => {
