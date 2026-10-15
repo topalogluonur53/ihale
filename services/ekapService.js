@@ -402,6 +402,46 @@ function getTopWinnersAnalytics() {
   };
 }
 
+function addUpcomingTender(tender) {
+  if (!tender.ikn || !tender.title) {
+    throw new Error('İKN ve İhale Başlığı zorunludur.');
+  }
+  const id = tender.id || `ikn-${String(tender.ikn).replace(/[^0-9]/g, '')}-${Date.now()}`;
+  const budget = Number(tender.estimated_budget) || 150000000;
+  const newTender = {
+    id,
+    ikn: tender.ikn,
+    title: tender.title,
+    authority: tender.authority || 'TÜRKİYE ELEKTRİK İLETİM A.Ş. (TEİAŞ)',
+    authority_group: tender.authority_group || 'TEİAŞ & TEDAŞ Enerji',
+    city: tender.city || 'Ankara',
+    plate: Number(tender.plate) || 6,
+    tender_type: tender.tender_type || 'Trafo Merkezi & Yapım',
+    tender_method: tender.tender_method || '4734 Sayılı KİK Açık İhale Usulü',
+    announcement_date: tender.announcement_date || new Date().toISOString().split('T')[0],
+    announcement_date_str: tender.announcement_date_str || new Date().toLocaleDateString('tr-TR'),
+    tender_date: tender.tender_date || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+    tender_date_str: tender.tender_date_str || '30 Gün İçinde',
+    deadline_str: tender.deadline_str || 'İhale saatine kadar',
+    estimated_budget: budget,
+    estimated_budget_str: tender.estimated_budget_str || `${(budget / 1000000).toLocaleString('tr-TR')} Milyon ₺`,
+    threshold_value: Number(tender.threshold_value) || Math.round(budget * 0.85),
+    threshold_value_str: tender.threshold_value_str || `${((budget * 0.85) / 1000000).toLocaleString('tr-TR')} Milyon ₺`,
+    e_tender: tender.e_tender !== false,
+    partial_bid: !!tender.partial_bid,
+    collateral_rate: tender.collateral_rate || '%3 Geçici Teminat',
+    address: tender.address || 'EKAP Elektronik İhale & TEİAŞ',
+    detail_summary: tender.detail_summary || tender.title,
+    official_source: 'EKAP v2 İhale İlanı',
+    interested_companies_count: Number(tender.interested_companies_count) || 6,
+    interested_companies_list: Array.isArray(tender.interested_companies_list) ? tender.interested_companies_list : ['Girişim Elektrik A.Ş.', 'Europower Enerji A.Ş.', 'Astor Enerji A.Ş.'],
+    status: 'Teklif Verme Aşamasında',
+    category_tag: tender.category_tag || 'trafo'
+  };
+  tendersDb.unshift(newTender);
+  return newTender;
+}
+
 async function syncLiveFromEKAP() {
   lastSyncTime = new Date().toISOString();
   return {
@@ -417,5 +457,6 @@ module.exports = {
   getUpcomingTenders,
   getWinningCompanies,
   getAllCompaniesIndex,
-  getTopWinnersAnalytics
+  getTopWinnersAnalytics,
+  addUpcomingTender
 };

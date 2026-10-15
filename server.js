@@ -6,7 +6,8 @@ const {
   getUpcomingTenders,
   getWinningCompanies,
   getAllCompaniesIndex,
-  getTopWinnersAnalytics
+  getTopWinnersAnalytics,
+  addUpcomingTender
 } = require('./services/ekapService');
 
 const app = express();
@@ -27,6 +28,21 @@ app.get('/api/tenders/upcoming', (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Yeni Yaklaşan İhale Ekleme API (Dinamik Genişletme)
+app.post('/api/tenders/upcoming', (req, res) => {
+  try {
+    const item = addUpcomingTender(req.body);
+    res.json({
+      success: true,
+      message: 'Yeni ihale başarıyla eklendi.',
+      data: item,
+      total_count: getUpcomingTenders().length
+    });
+  } catch (error) {
+    res.status(400).json({ success: false, error: error.message });
   }
 });
 
