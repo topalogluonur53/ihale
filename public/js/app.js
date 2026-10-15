@@ -80,6 +80,9 @@ const DOM = {
   companiesBadgeCount: document.getElementById('companiesBadgeCount'),
   favCountPill: document.getElementById('favCountPill'),
   btnClearAllFavorites: document.getElementById('btnClearAllFavorites'),
+  btnToggleAllWinners: document.getElementById('btnToggleAllWinners'),
+  btnToggleAllUpcoming: document.getElementById('btnToggleAllUpcoming'),
+  btnToggleAllCompanies: document.getElementById('btnToggleAllCompanies'),
 
   // Detay Modalı (Genişletilebilir Kayar Pencere)
   detailOverlay: document.getElementById('detailModalOverlay'),
@@ -266,6 +269,31 @@ function setupEventListeners() {
       showToast('Favoriler temizlendi');
     }
   });
+
+  // Kartları Toplu Aç / Kapat
+  if (DOM.btnToggleAllWinners) {
+    DOM.btnToggleAllWinners.addEventListener('click', () => toggleAllCardsInContainer(DOM.winnerCardsList));
+  }
+  if (DOM.btnToggleAllUpcoming) {
+    DOM.btnToggleAllUpcoming.addEventListener('click', () => toggleAllCardsInContainer(DOM.upcomingCardsList));
+  }
+  if (DOM.btnToggleAllCompanies) {
+    DOM.btnToggleAllCompanies.addEventListener('click', () => toggleAllCardsInContainer(DOM.companiesCardsList));
+  }
+}
+
+/**
+ * Belirtilen Konteyner İçindeki Tüm Kartları Toplu Olarak Açar veya Daraltır
+ */
+function toggleAllCardsInContainer(container) {
+  if (!container) return;
+  const cards = container.querySelectorAll('.ihalehaber-card, .tender-card, .company-card');
+  if (cards.length === 0) return;
+  const anyClosed = Array.from(cards).some(c => !c.classList.contains('expanded'));
+  cards.forEach(c => {
+    c.classList.toggle('expanded', anyClosed);
+  });
+  showToast(anyClosed ? 'Tüm kart detayları açıldı' : 'Tüm kartlar daraltıldı');
 }
 
 // ============================================================
@@ -562,91 +590,122 @@ function renderWinningCompanies() {
     }
 
     card.innerHTML = `
-      <div class="card-header-bar">
-        <span class="ikn-tag">İKN: ${w.ikn}</span>
-        <span class="authority-group-tag">${w.authority_group || 'Kamu İdaresi'} • ${w.city}</span>
-      </div>
+      <!-- Kompakt Kart Başlığı (Her Zaman Görünür - Tıklanabilir) -->
+      <div class="card-summary-header">
+        <div class="card-header-bar">
+          <span class="ikn-tag">İKN: ${w.ikn}</span>
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <span class="authority-group-tag">${w.authority_group || 'Kamu İdaresi'} • ${w.city}</span>
+            <span class="expand-indicator-pill">
+              <span class="expand-lbl">Detay</span>
+              <i class="ri-arrow-down-s-line card-expand-chevron"></i>
+            </span>
+          </div>
+        </div>
 
-      <h3 class="tender-main-title">${w.title}</h3>
-      <div class="tender-authority-row">
-        <i class="ri-government-line"></i> ${w.authority}
-      </div>
+        <h3 class="tender-main-title" style="margin: 4px 0 2px 0;">${w.title}</h3>
 
-      <!-- İhaleHaber 3'lü Metrik Çubuğu: YM - SD - SB -->
-      <div class="metrics-strip-3col">
-        <div class="metric-col">
-          <span class="metric-tag-lbl">Yaklaşık Maliyet (YM)</span>
-          <span class="metric-tag-val">${w.estimated_cost_str}</span>
-        </div>
-        <div class="metric-col">
-          <span class="metric-tag-lbl">KİK Sınır Değer (SD)</span>
-          <span class="metric-tag-val gold">${w.threshold_value_str}</span>
-        </div>
-        <div class="metric-col">
-          <span class="metric-tag-lbl">Sözleşme Bedeli</span>
-          <span class="metric-tag-val emerald">${w.contract_amount_str}</span>
-        </div>
-      </div>
-
-      <!-- Resmi İhale & Sözleşme Süreç Tarihleri Şeridi -->
-      <div class="card-dates-bar">
-        <div class="date-chip highlight-announcement">
-          <span class="date-chip-lbl"><i class="ri-megaphone-line"></i> İlan Tarihi</span>
-          <span class="date-chip-val">${w.announcement_date_str || w.announcement_date || '-'}</span>
-        </div>
-        <div class="date-chip highlight-tender">
-          <span class="date-chip-lbl"><i class="ri-auction-line"></i> İhale Tarihi</span>
-          <span class="date-chip-val">${w.tender_date_str || w.tender_date || '-'}</span>
-        </div>
-        <div class="date-chip highlight-contract">
-          <span class="date-chip-lbl"><i class="ri-file-text-line"></i> Sözleşme Tarihi</span>
-          <span class="date-chip-val">${w.contract_date_str || w.contract_date || '-'}</span>
-        </div>
-        <div class="date-chip highlight-completion">
-          <span class="date-chip-lbl"><i class="ri-flag-line"></i> İş Bitim Tarihi</span>
-          <span class="date-chip-val">${w.completion_date_str || w.work_duration || '-'}</span>
+        <div class="card-summary-subline">
+          <div class="tender-authority-row" style="margin: 0; font-size: 0.72rem;">
+            <i class="ri-government-line"></i> ${w.authority}
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span class="compact-winner-badge" title="Kazanan Yüklenici">
+              <i class="ri-trophy-line"></i> ${w.winner_company.length > 28 ? w.winner_company.slice(0, 26) + '...' : w.winner_company}
+            </span>
+            <span class="compact-price-tag" title="Sözleşme Bedeli">
+              ${w.contract_amount_str}
+            </span>
+          </div>
         </div>
       </div>
 
-      <!-- İhaleyi Kazanan Firma Kutusu -->
-      <div class="winner-banner-box">
-        <div class="winner-banner-top">
-          <span class="winner-pill-lbl">
-            <i class="ri-trophy-fill"></i> İHALEYİ KAZANAN YÜKLENİCİ
-          </span>
-          <span class="discount-tag">
-            %${w.discount_percentage} Kırım / İndirim
-          </span>
+      <!-- Tıklandığında Açılan Detay Bölümü (Varsayılan Olarak Gizli) -->
+      <div class="card-expandable-content">
+        <!-- İhaleHaber 3'lü Metrik Çubuğu: YM - SD - SB -->
+        <div class="metrics-strip-3col">
+          <div class="metric-col">
+            <span class="metric-tag-lbl">Yaklaşık Maliyet (YM)</span>
+            <span class="metric-tag-val">${w.estimated_cost_str}</span>
+          </div>
+          <div class="metric-col">
+            <span class="metric-tag-lbl">KİK Sınır Değer (SD)</span>
+            <span class="metric-tag-val gold">${w.threshold_value_str}</span>
+          </div>
+          <div class="metric-col">
+            <span class="metric-tag-lbl">Sözleşme Bedeli</span>
+            <span class="metric-tag-val emerald">${w.contract_amount_str}</span>
+          </div>
         </div>
-        <div class="winner-company-title">${w.winner_company}</div>
-        <div class="winner-subtext">
-          Vergi No: <strong>${w.winner_tax_id}</strong> • Merkez: <strong>${w.winner_city}</strong> • Sözleşme: <strong>${w.contract_date_str || w.contract_date}</strong>
+
+        <!-- Resmi İhale & Sözleşme Süreç Tarihleri Şeridi -->
+        <div class="card-dates-bar">
+          <div class="date-chip highlight-announcement">
+            <span class="date-chip-lbl"><i class="ri-megaphone-line"></i> İlan Tarihi</span>
+            <span class="date-chip-val">${w.announcement_date_str || w.announcement_date || '-'}</span>
+          </div>
+          <div class="date-chip highlight-tender">
+            <span class="date-chip-lbl"><i class="ri-auction-line"></i> İhale Tarihi</span>
+            <span class="date-chip-val">${w.tender_date_str || w.tender_date || '-'}</span>
+          </div>
+          <div class="date-chip highlight-contract">
+            <span class="date-chip-lbl"><i class="ri-file-text-line"></i> Sözleşme Tarihi</span>
+            <span class="date-chip-val">${w.contract_date_str || w.contract_date || '-'}</span>
+          </div>
+          <div class="date-chip highlight-completion">
+            <span class="date-chip-lbl"><i class="ri-flag-line"></i> İş Bitim Tarihi</span>
+            <span class="date-chip-val">${w.completion_date_str || w.work_duration || '-'}</span>
+          </div>
         </div>
-      </div>
 
-      <!-- Katılan Firmaları Göster/Gizle Butonu -->
-      <button class="toggle-bidders-btn" data-target="biddersTable_${w.id}">
-        <span><i class="ri-group-line"></i> Katılan Firmalar ve Teklif Cetveli (${w.bid_count} İstekli)</span>
-        <i class="ri-arrow-down-s-line"></i>
-      </button>
-
-      <!-- Açılır Teklif Cetveli Tablosu -->
-      ${biddersHtml}
-
-      <div class="card-footer-row" style="margin-top: 8px;">
-        <div style="font-size: 0.7rem; color: var(--text-muted);">
-          <span>Süre: <strong>${w.work_duration}</strong></span> • <span>${w.valid_bid_count} Geçerli Teklif</span>
+        <!-- İhaleyi Kazanan Firma Kutusu -->
+        <div class="winner-banner-box">
+          <div class="winner-banner-top">
+            <span class="winner-pill-lbl">
+              <i class="ri-trophy-fill"></i> İHALEYİ KAZANAN YÜKLENİCİ
+            </span>
+            <span class="discount-tag">
+              %${w.discount_percentage} Kırım / İndirim
+            </span>
+          </div>
+          <div class="winner-company-title">${w.winner_company}</div>
+          <div class="winner-subtext">
+            Vergi No: <strong>${w.winner_tax_id}</strong> • Merkez: <strong>${w.winner_city}</strong> • Sözleşme: <strong>${w.contract_date_str || w.contract_date}</strong>
+          </div>
         </div>
-        <div class="card-actions-group">
-          <button class="fav-btn ${isFav ? 'active' : ''}" data-id="${w.id}" title="Favoriye Kaydet">
-            <i class="${isFav ? 'ri-heart-fill' : 'ri-heart-line'}"></i>
-          </button>
-          <button class="detail-trigger-btn" data-id="${w.id}">
-            Detay Raporu <i class="ri-arrow-right-s-line"></i>
-          </button>
+
+        <!-- Katılan Firmaları Göster/Gizle Butonu -->
+        <button class="toggle-bidders-btn" data-target="biddersTable_${w.id}">
+          <span><i class="ri-group-line"></i> Katılan Firmalar ve Teklif Cetveli (${w.bid_count} İstekli)</span>
+          <i class="ri-arrow-down-s-line"></i>
+        </button>
+
+        <!-- Açılır Teklif Cetveli Tablosu -->
+        ${biddersHtml}
+
+        <div class="card-footer-row" style="margin-top: 8px;">
+          <div style="font-size: 0.7rem; color: var(--text-muted);">
+            <span>Süre: <strong>${w.work_duration}</strong></span> • <span>${w.valid_bid_count} Geçerli Teklif</span>
+          </div>
+          <div class="card-actions-group">
+            <button class="fav-btn ${isFav ? 'active' : ''}" data-id="${w.id}" title="Favoriye Kaydet">
+              <i class="${isFav ? 'ri-heart-fill' : 'ri-heart-line'}"></i>
+            </button>
+            <button class="detail-trigger-btn" data-id="${w.id}">
+              Detay Raporu <i class="ri-arrow-right-s-line"></i>
+            </button>
+          </div>
         </div>
       </div>
     `;
+
+    // Karta tıklandığında aç / kapat (akordiyon)
+    card.addEventListener('click', (e) => {
+      if (e.target.closest('button') || e.target.closest('a') || e.target.closest('.bidders-table-wrapper')) {
+        return;
+      }
+      card.classList.toggle('expanded');
+    });
 
     // Açılır Tablo Butonu
     const toggleBtn = card.querySelector('.toggle-bidders-btn');
@@ -669,7 +728,10 @@ function renderWinningCompanies() {
     });
 
     // Detay Tıklaması
-    card.querySelector('.detail-trigger-btn').addEventListener('click', () => openWinnerDetail(w));
+    card.querySelector('.detail-trigger-btn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      openWinnerDetail(w);
+    });
 
     container.appendChild(card);
   });
@@ -709,62 +771,88 @@ function renderCompaniesIndex() {
       : 0;
 
     card.innerHTML = `
-      <div class="company-card-top">
-        <div class="company-icon-circle">
-          <i class="${c.won_count > 0 ? 'ri-award-line' : 'ri-building-line'}"></i>
+      <div class="card-summary-header">
+        <div class="company-card-top">
+          <div class="company-icon-circle">
+            <i class="${c.won_count > 0 ? 'ri-award-line' : 'ri-building-line'}"></i>
+          </div>
+          <div style="flex: 1;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
+              <h3 class="company-name-heading">${c.name}</h3>
+              <span class="expand-indicator-pill">
+                <span class="expand-lbl">Detay</span>
+                <i class="ri-arrow-down-s-line card-expand-chevron"></i>
+              </span>
+            </div>
+            <div class="company-meta-text">
+              <span>VKN: ${c.tax_id || 'Kayıtlı'}</span> • <span>${c.city}</span>
+            </div>
+          </div>
         </div>
-        <div style="flex: 1;">
-          <h3 class="company-name-heading">${c.name}</h3>
-          <div class="company-meta-text">
-            <span>VKN: ${c.tax_id || 'Kayıtlı'}</span> • <span>${c.city}</span>
+
+        <div class="company-stats-grid">
+          <div>
+            <div class="company-stat-val" style="color: var(--primary);">${c.participated_count} İhale</div>
+            <div style="color: var(--text-muted); font-size: 0.65rem;">Katıldığı İhaleler</div>
+          </div>
+          <div>
+            <div class="company-stat-val" style="color: var(--success-emerald);">${c.won_count} İhale</div>
+            <div style="color: var(--text-muted); font-size: 0.65rem;">Kazandığı İhale</div>
+          </div>
+          <div>
+            <div class="company-stat-val" style="color: var(--accent-gold);">%${winRate}</div>
+            <div style="color: var(--text-muted); font-size: 0.65rem;">Kazanma Oranı</div>
           </div>
         </div>
       </div>
 
-      <div class="company-stats-grid">
-        <div>
-          <div class="company-stat-val" style="color: var(--primary);">${c.participated_count} İhale</div>
-          <div style="color: var(--text-muted); font-size: 0.65rem;">Katıldığı İhaleler</div>
+      <div class="card-expandable-content">
+        <div style="font-size: 0.72rem; color: var(--text-secondary);">
+          <strong>Son İhale Hareketleri:</strong>
+          <ul style="margin: 4px 0 0 16px; font-size: 0.68rem; color: var(--text-muted); line-height: 1.4;">
+            ${c.tenders.slice(0, 3).map(t => `
+              <li style="margin-bottom: 6px;">
+                <div>
+                  <span style="color: ${t.is_winner ? 'var(--success-emerald)' : 'var(--text-secondary)'}; font-weight: 600;">
+                    ${t.is_winner ? '🏆 Kazandı' : `🥈 ${t.rank}. Teklif`}:
+                  </span>
+                  ${t.title.slice(0, 48)}... (${t.bid_str})
+                </div>
+                <div class="company-tender-dates">
+                  <span><i class="ri-calendar-line"></i> İhale: <strong>${t.tender_date_str || '-'}</strong></span>
+                  <span><i class="ri-file-text-line"></i> Sözleşme: <strong>${t.contract_date_str || t.contract_date || '-'}</strong></span>
+                </div>
+              </li>
+            `).join('')}
+          </ul>
         </div>
-        <div>
-          <div class="company-stat-val" style="color: var(--success-emerald);">${c.won_count} İhale</div>
-          <div style="color: var(--text-muted); font-size: 0.65rem;">Kazandığı İhale</div>
+        <div style="margin-top: 10px; text-align: right;">
+          <button class="company-filter-action-btn" style="background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; padding: 4px 10px; border-radius: 6px; font-size: 0.72rem; font-weight: 700; cursor: pointer;">
+            <i class="ri-search-line"></i> Bu Firmanın İhalelerini Listele
+          </button>
         </div>
-        <div>
-          <div class="company-stat-val" style="color: var(--accent-gold);">%${winRate}</div>
-          <div style="color: var(--text-muted); font-size: 0.65rem;">Kazanma Oranı</div>
-        </div>
-      </div>
-
-      <div style="margin-top: 10px; font-size: 0.72rem; color: var(--text-secondary);">
-        <strong>Son İhale Hareketleri:</strong>
-        <ul style="margin: 4px 0 0 16px; font-size: 0.68rem; color: var(--text-muted); line-height: 1.4;">
-          ${c.tenders.slice(0, 3).map(t => `
-            <li style="margin-bottom: 6px;">
-              <div>
-                <span style="color: ${t.is_winner ? 'var(--success-emerald)' : 'var(--text-secondary)'}; font-weight: 600;">
-                  ${t.is_winner ? '🏆 Kazandı' : `🥈 ${t.rank}. Teklif`}:
-                </span>
-                ${t.title.slice(0, 48)}... (${t.bid_str})
-              </div>
-              <div class="company-tender-dates">
-                <span><i class="ri-calendar-line"></i> İhale: <strong>${t.tender_date_str || '-'}</strong></span>
-                <span><i class="ri-file-text-line"></i> Sözleşme: <strong>${t.contract_date_str || t.contract_date || '-'}</strong></span>
-              </div>
-            </li>
-          `).join('')}
-        </ul>
       </div>
     `;
 
-    // Tıklandığında bu firmanın ihalelerini filtrele
-    card.addEventListener('click', () => {
-      AppState.searchQuery = c.name;
-      DOM.globalSearchInput.value = c.name;
-      DOM.btnClearSearch.style.display = 'block';
-      switchTab('tabWinners');
-      showToast(`${c.name} ihaleleri filtrelendi`);
+    // Karta tıklandığında açılır / kapanır akordiyon
+    card.addEventListener('click', (e) => {
+      if (e.target.closest('button') || e.target.closest('a')) {
+        return;
+      }
+      card.classList.toggle('expanded');
     });
+
+    const filterBtn = card.querySelector('.company-filter-action-btn');
+    if (filterBtn) {
+      filterBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        AppState.searchQuery = c.name;
+        DOM.globalSearchInput.value = c.name;
+        DOM.btnClearSearch.style.display = 'block';
+        switchTab('tabWinners');
+        showToast(`${c.name} ihaleleri filtrelendi`);
+      });
+    }
 
     container.appendChild(card);
   });
@@ -798,77 +886,110 @@ function renderUpcomingTenders() {
     else if (t.tender_type.includes('Danışmanlık')) typeClass = 'type-consultancy';
 
     card.innerHTML = `
-      <div class="card-top-row">
-        <span class="ikn-tag">İKN: ${t.ikn}</span>
-        <span class="countdown-pill ${t.urgency}">
-          <i class="ri-time-line"></i> ${t.countdown_text}
-        </span>
-      </div>
+      <!-- Kompakt Kart Başlığı (Her Zaman Görünür - Tıklanabilir) -->
+      <div class="card-summary-header">
+        <div class="card-top-row">
+          <span class="ikn-tag">İKN: ${t.ikn}</span>
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <span class="countdown-pill ${t.urgency}">
+              <i class="ri-time-line"></i> ${t.countdown_text}
+            </span>
+            <span class="expand-indicator-pill">
+              <span class="expand-lbl">Detay</span>
+              <i class="ri-arrow-down-s-line card-expand-chevron"></i>
+            </span>
+          </div>
+        </div>
 
-      <h3 class="card-title">${t.title}</h3>
-      
-      <div class="card-authority">
-        <i class="ri-government-line"></i> ${t.authority}
-      </div>
-
-      <!-- İhaleHaber Tarzı YM ve SD Gösterimi -->
-      <div class="metrics-strip-3col" style="grid-template-columns: 1fr 1fr; margin-bottom: 8px;">
-        <div class="metric-col">
-          <span class="metric-tag-lbl">Yaklaşık Maliyet (YM)</span>
-          <span class="metric-tag-val">${t.estimated_budget_str}</span>
-        </div>
-        <div class="metric-col">
-          <span class="metric-tag-lbl">Tahmini Sınır Değer (SD)</span>
-          <span class="metric-tag-val gold">${t.threshold_value_str || '-'}</span>
-        </div>
-      </div>
-
-      <!-- Yaklaşan İhale Tarihleri & Süre Şeridi -->
-      <div class="card-dates-bar upcoming">
-        <div class="date-chip highlight-announcement">
-          <span class="date-chip-lbl"><i class="ri-megaphone-line"></i> İlan Tarihi</span>
-          <span class="date-chip-val">${t.announcement_date_str || t.announcement_date || '-'}</span>
-        </div>
-        <div class="date-chip highlight-tender">
-          <span class="date-chip-lbl"><i class="ri-calendar-event-line"></i> İhale Tarihi & Saati</span>
-          <span class="date-chip-val">${t.tender_date_str || t.formatted_date}</span>
-        </div>
-        <div class="date-chip highlight-deadline">
-          <span class="date-chip-lbl"><i class="ri-time-line"></i> Son Teklif Verme</span>
-          <span class="date-chip-val">${t.deadline_str || t.tender_date_str || '-'}</span>
+        <h3 class="card-title" style="margin: 4px 0 2px 0;">${t.title}</h3>
+        
+        <div class="card-summary-subline">
+          <div class="card-authority" style="margin: 0; font-size: 0.72rem;">
+            <i class="ri-government-line"></i> ${t.authority}
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span class="meta-chip city" style="margin: 0; padding: 2px 6px; font-size: 0.68rem;">
+              <i class="ri-map-pin-line"></i> ${t.city}
+            </span>
+            <span class="compact-price-tag" title="Yaklaşık Maliyet">
+              ${t.estimated_budget_str}
+            </span>
+          </div>
         </div>
       </div>
 
-      <div class="card-meta-chips">
-        <span class="meta-chip city"><i class="ri-map-pin-line"></i> ${t.city}</span>
-        <span class="meta-chip ${typeClass}">${t.tender_type}</span>
-        ${t.e_tender ? '<span class="meta-chip e-tender"><i class="ri-shield-check-line"></i> e-Teklif</span>' : ''}
-        <span class="meta-chip" style="background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0;">
-          <i class="ri-file-download-line" style="color: #2563eb;"></i> ${t.interested_companies_count || 6} Firma İlgileniyor
-        </span>
-      </div>
-
-      <div class="card-footer-row">
-        <div style="font-size: 0.72rem; color: var(--text-muted);">
-          İhale: <strong>${t.tender_date_str || t.formatted_date}</strong>
+      <!-- Tıklandığında Açılan Detay Bölümü (Varsayılan: Gizli) -->
+      <div class="card-expandable-content">
+        <!-- İhaleHaber Tarzı YM ve SD Gösterimi -->
+        <div class="metrics-strip-3col" style="grid-template-columns: 1fr 1fr; margin-bottom: 8px;">
+          <div class="metric-col">
+            <span class="metric-tag-lbl">Yaklaşık Maliyet (YM)</span>
+            <span class="metric-tag-val">${t.estimated_budget_str}</span>
+          </div>
+          <div class="metric-col">
+            <span class="metric-tag-lbl">Tahmini Sınır Değer (SD)</span>
+            <span class="metric-tag-val gold">${t.threshold_value_str || '-'}</span>
+          </div>
         </div>
-        <div class="card-actions-group">
-          <button class="fav-btn ${isFav ? 'active' : ''}" data-id="${t.id}" title="Favoriye Ekle">
-            <i class="${isFav ? 'ri-heart-fill' : 'ri-heart-line'}"></i>
-          </button>
-          <button class="detail-trigger-btn" data-id="${t.id}">
-            Şartname & Detay <i class="ri-arrow-right-s-line"></i>
-          </button>
+
+        <!-- Yaklaşan İhale Tarihleri & Süre Şeridi -->
+        <div class="card-dates-bar upcoming">
+          <div class="date-chip highlight-announcement">
+            <span class="date-chip-lbl"><i class="ri-megaphone-line"></i> İlan Tarihi</span>
+            <span class="date-chip-val">${t.announcement_date_str || t.announcement_date || '-'}</span>
+          </div>
+          <div class="date-chip highlight-tender">
+            <span class="date-chip-lbl"><i class="ri-calendar-event-line"></i> İhale Tarihi & Saati</span>
+            <span class="date-chip-val">${t.tender_date_str || t.formatted_date}</span>
+          </div>
+          <div class="date-chip highlight-deadline">
+            <span class="date-chip-lbl"><i class="ri-time-line"></i> Son Teklif Verme</span>
+            <span class="date-chip-val">${t.deadline_str || t.tender_date_str || '-'}</span>
+          </div>
+        </div>
+
+        <div class="card-meta-chips">
+          <span class="meta-chip city"><i class="ri-map-pin-line"></i> ${t.city}</span>
+          <span class="meta-chip ${typeClass}">${t.tender_type}</span>
+          ${t.e_tender ? '<span class="meta-chip e-tender"><i class="ri-shield-check-line"></i> e-Teklif</span>' : ''}
+          <span class="meta-chip" style="background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0;">
+            <i class="ri-file-download-line" style="color: #2563eb;"></i> ${t.interested_companies_count || 6} Firma İlgileniyor
+          </span>
+        </div>
+
+        <div class="card-footer-row">
+          <div style="font-size: 0.72rem; color: var(--text-muted);">
+            İhale: <strong>${t.tender_date_str || t.formatted_date}</strong>
+          </div>
+          <div class="card-actions-group">
+            <button class="fav-btn ${isFav ? 'active' : ''}" data-id="${t.id}" title="Favoriye Ekle">
+              <i class="${isFav ? 'ri-heart-fill' : 'ri-heart-line'}"></i>
+            </button>
+            <button class="detail-trigger-btn" data-id="${t.id}">
+              Şartname & Detay <i class="ri-arrow-right-s-line"></i>
+            </button>
+          </div>
         </div>
       </div>
     `;
+
+    // Karta tıklandığında açılır / kapanır akordiyon
+    card.addEventListener('click', (e) => {
+      if (e.target.closest('button') || e.target.closest('a')) {
+        return;
+      }
+      card.classList.toggle('expanded');
+    });
 
     card.querySelector('.fav-btn').addEventListener('click', (e) => {
       e.stopPropagation();
       toggleFavorite(t);
     });
 
-    card.querySelector('.detail-trigger-btn').addEventListener('click', () => openTenderDetail(t));
+    card.querySelector('.detail-trigger-btn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      openTenderDetail(t);
+    });
     container.appendChild(card);
   });
 }
@@ -967,33 +1088,56 @@ function renderFavorites() {
     const card = document.createElement('div');
     card.className = 'ihalehaber-card';
     card.innerHTML = `
-      <div class="card-header-bar">
-        <span class="ikn-tag">İKN: ${t.ikn}</span>
-        <span class="authority-group-tag">${t.city}</span>
-      </div>
-      <h3 class="tender-main-title">${t.title}</h3>
-      <div class="tender-authority-row"><i class="ri-government-line"></i> ${t.authority}</div>
-      <div class="fav-card-dates">
-        <span><i class="ri-calendar-line"></i> İhale: <strong>${t.tender_date_str || t.formatted_date || '-'}</strong></span>
-        ${t.contract_date_str ? `<span>• <i class="ri-file-text-line"></i> Sözleşme: <strong>${t.contract_date_str}</strong></span>` : ''}
-      </div>
-      <div class="card-footer-row">
-        <div>
-          <span style="font-size: 0.65rem; color: var(--text-muted);">Sözleşme / Bütçe</span>
-          <div style="font-family: var(--font-heading); font-weight: 700; color: var(--success-emerald);">
-            ${t.contract_amount_str || t.estimated_budget_str}
+      <div class="card-summary-header">
+        <div class="card-header-bar">
+          <span class="ikn-tag">İKN: ${t.ikn}</span>
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <span class="authority-group-tag">${t.city}</span>
+            <span class="expand-indicator-pill">
+              <span class="expand-lbl">Detay</span>
+              <i class="ri-arrow-down-s-line card-expand-chevron"></i>
+            </span>
           </div>
         </div>
-        <div class="card-actions-group">
-          <button class="fav-btn active" data-id="${t.id}" title="Listeden Kaldır">
-            <i class="ri-heart-fill"></i>
-          </button>
-          <button class="detail-trigger-btn" data-id="${t.id}">
-            İncele <i class="ri-arrow-right-s-line"></i>
-          </button>
+        <h3 class="tender-main-title" style="margin: 4px 0 2px 0;">${t.title}</h3>
+        <div class="card-summary-subline">
+          <div class="tender-authority-row" style="margin: 0; font-size: 0.72rem;">
+            <i class="ri-government-line"></i> ${t.authority}
+          </div>
+          <span class="compact-price-tag" title="Sözleşme / Bütçe">
+            ${t.contract_amount_str || t.estimated_budget_str}
+          </span>
+        </div>
+      </div>
+
+      <div class="card-expandable-content">
+        <div class="fav-card-dates">
+          <span><i class="ri-calendar-line"></i> İhale: <strong>${t.tender_date_str || t.formatted_date || '-'}</strong></span>
+          ${t.contract_date_str ? `<span>• <i class="ri-file-text-line"></i> Sözleşme: <strong>${t.contract_date_str}</strong></span>` : ''}
+        </div>
+        <div class="card-footer-row" style="margin-top: 8px;">
+          <div>
+            <span style="font-size: 0.65rem; color: var(--text-muted);">Sözleşme / Bütçe</span>
+            <div style="font-family: var(--font-heading); font-weight: 700; color: var(--success-emerald);">
+              ${t.contract_amount_str || t.estimated_budget_str}
+            </div>
+          </div>
+          <div class="card-actions-group">
+            <button class="fav-btn active" data-id="${t.id}" title="Listeden Kaldır">
+              <i class="ri-heart-fill"></i>
+            </button>
+            <button class="detail-trigger-btn" data-id="${t.id}">
+              İncele <i class="ri-arrow-right-s-line"></i>
+            </button>
+          </div>
         </div>
       </div>
     `;
+
+    card.addEventListener('click', (e) => {
+      if (e.target.closest('button') || e.target.closest('a')) return;
+      card.classList.toggle('expanded');
+    });
 
     card.querySelector('.fav-btn').addEventListener('click', (e) => {
       e.stopPropagation();
@@ -1001,7 +1145,8 @@ function renderFavorites() {
       renderFavorites();
     });
 
-    card.querySelector('.detail-trigger-btn').addEventListener('click', () => {
+    card.querySelector('.detail-trigger-btn').addEventListener('click', (e) => {
+      e.stopPropagation();
       if (t.bidders) openWinnerDetail(t);
       else openTenderDetail(t);
     });

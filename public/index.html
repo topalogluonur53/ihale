@@ -164,7 +164,12 @@
               <h2 class="section-heading">İhale Sonuçları & Teklif Cetvelleri</h2>
               <p class="section-subtext">Katılan tüm firmaların teklifleri ve kazanan yükleniciler</p>
             </div>
-            <span class="counter-badge winner-badge" id="winnersBadgeCount">0 Sonuç</span>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <button class="toggle-all-cards-btn" id="btnToggleAllWinners" title="Tüm Kartları Aç / Kapat">
+                <i class="ri-expand-up-down-line"></i> <span>Tümünü Aç / Kapat</span>
+              </button>
+              <span class="counter-badge winner-badge" id="winnersBadgeCount">0 Sonuç</span>
+            </div>
           </div>
 
           <!-- Geçmiş İhaleler Zaman Kapsamı Bandı (Son 1 Yıl) -->
@@ -201,7 +206,12 @@
               <h2 class="section-heading">İhalesi Yaklaşanlar</h2>
               <p class="section-subtext">Yaklaşık maliyet, sınır değer ve geri sayım</p>
             </div>
-            <span class="counter-badge" id="upcomingBadgeCount">0 İhale</span>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <button class="toggle-all-cards-btn" id="btnToggleAllUpcoming" title="Tüm Kartları Aç / Kapat">
+                <i class="ri-expand-up-down-line"></i> <span>Tümünü Aç / Kapat</span>
+              </button>
+              <span class="counter-badge" id="upcomingBadgeCount">0 İhale</span>
+            </div>
           </div>
 
           <!-- Gelecek İhaleler Zaman Kapsamı Bandı (Gelecek 6 Ay & 1 Yıl) -->
@@ -231,7 +241,12 @@
               <h2 class="section-heading">Katılan Firmalar Dizini</h2>
               <p class="section-subtext">İhalelere teklif veren şirketlerin katılım & kazanma karnesi</p>
             </div>
-            <span class="counter-badge" id="companiesBadgeCount">0 Firma</span>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <button class="toggle-all-cards-btn" id="btnToggleAllCompanies" title="Tüm Kartları Aç / Kapat">
+                <i class="ri-expand-up-down-line"></i> <span>Tümünü Aç / Kapat</span>
+              </button>
+              <span class="counter-badge" id="companiesBadgeCount">0 Firma</span>
+            </div>
           </div>
 
           <div class="cards-list" id="companiesCardsList">
@@ -359,6 +374,6 @@
     </main>
   </div>
 
-  <script src="/js/app.js?v=5"></script>
+  <script src="/js/app.js?v=6"></script>
 </body>
 </html>
