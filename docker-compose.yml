@@ -48,6 +48,8 @@ services:
       - WATCHTOWER_POLL_INTERVAL=300
       - WATCHTOWER_LABEL_ENABLE=true
     command: --interval 300 --cleanup
+    healthcheck:
+      disable: true
 
 x-casaos:
   architectures:
