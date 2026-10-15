@@ -2415,6 +2415,106 @@ const upcomingTenders = [
  */
 const winningCompanies = [
   // =========================================================================
+  // TEİAŞ İTM-563 REF. 154 kV ÇUKURCA TRAFO MERKEZİ (HAKKÂRİ) İHALESİ - KAZANAN: GİRİŞİM ELEKTRİK (GESAN)
+  // =========================================================================
+  {
+    id: "snc-2026-itm563-cukurca",
+    ikn: "İTM-563 / 2026",
+    title: "TEİAŞ İTM-563 Ref. 154 kV Çukurca Trafo Merkezi (Hakkâri) 2x62.5 MVA Yapımı",
+    authority: "TÜRKİYE ELEKTRİK İLETİM A.Ş. GENEL MÜDÜRLÜĞÜ (TEİAŞ)",
+    authority_group: "TEİAŞ & TEDAŞ Enerji",
+    city: "Hakkâri",
+    tender_type: "Trafo Merkezi & Yapım",
+    tender_method: "4734 Sayılı KİK Açık İhale Usulü",
+    announcement_date: "2026-08-01",
+    announcement_date_str: "01.08.2026",
+    tender_date: "2026-09-25",
+    tender_date_str: "25.09.2026",
+    contract_date: "2026-10-15",
+    contract_date_str: "15.10.2026",
+    completion_date: "2027-10-15",
+    completion_date_str: "15.10.2027",
+    estimated_cost: 425850000,
+    estimated_cost_str: "425.850.000 ₺",
+    threshold_value: 361972500,
+    threshold_value_str: "361.972.500 ₺",
+    contract_amount: 390931876,
+    contract_amount_str: "390.931.876 ₺",
+    discount_percentage: 8.20,
+    work_duration: "360 Gün",
+    bid_count: 5,
+    valid_bid_count: 4,
+    status: "1. En Avantajlı Teklif / Sözleşme Aşamasında (KAP)",
+    winner_company: "Girişim Elektrik Sanayi Taahhüt ve Ticaret A.Ş. (GESAN)",
+    winner_tax_id: "3960074521",
+    winner_city: "Ankara",
+    category_tag: "trafo",
+
+    bidders: [
+      {
+        rank: 1,
+        company_name: "Girişim Elektrik Sanayi Taahhüt ve Ticaret A.Ş. (GESAN)",
+        tax_id: "3960074521",
+        city: "Ankara",
+        bid_amount: 390931876,
+        bid_amount_str: "390.931.876 ₺",
+        discount_percentage: 8.20,
+        status: "winner",
+        status_label: "🏆 1. Teklif / Kazanan (Yüklenici)",
+        notes: "390.931.876 TL baz bedelle en avantajlı teklifi vererek birinci olundu. Transformatör ve hücreler Europower Enerji tarafından temin edilecektir (KAP Bildirimi)."
+      },
+      {
+        rank: 2,
+        company_name: "Kontrolmatik Teknoloji Enerji ve Mühendislik A.Ş.",
+        tax_id: "5770512841",
+        city: "İstanbul",
+        bid_amount: 402500000,
+        bid_amount_str: "402.500.000 ₺",
+        discount_percentage: 5.48,
+        status: "second",
+        status_label: "🥈 2. En Avantajlı Teklif",
+        notes: "İhaledeki en avantajlı ikinci teklif sahibi."
+      },
+      {
+        rank: 3,
+        company_name: "Astor Enerji A.Ş.",
+        tax_id: "0910048291",
+        city: "Ankara",
+        bid_amount: 408750000,
+        bid_amount_str: "408.750.000 ₺",
+        discount_percentage: 4.02,
+        status: "valid",
+        status_label: "✅ Geçerli Teklif",
+        notes: "3. sırada yer aldı."
+      },
+      {
+        rank: 4,
+        company_name: "Siemens Sanayi ve Ticaret A.Ş.",
+        tax_id: "7700052314",
+        city: "İstanbul",
+        bid_amount: 419200000,
+        bid_amount_str: "419.200.000 ₺",
+        discount_percentage: 1.56,
+        status: "valid",
+        status_label: "✅ Geçerli Teklif",
+        notes: "Geçerli teklif."
+      },
+      {
+        rank: 5,
+        company_name: "Best Elektromekanik Sanayi Tesisleri A.Ş.",
+        tax_id: "1650019284",
+        city: "Balıkesir",
+        bid_amount: 348000000,
+        bid_amount_str: "348.000.000 ₺",
+        discount_percentage: 18.28,
+        status: "below_threshold",
+        status_label: "⚠️ Sınır Değer Altı / Aşırı Düşük",
+        notes: "Sınır değerin (361.97M ₺) altında kaldı."
+      }
+    ]
+  },
+
+  // =========================================================================
   // 1. GİRİŞİM ELEKTRİK (GESAN) KAZANDIĞI TRAFO MERKEZİ İHALESİ
   // =========================================================================
   {
