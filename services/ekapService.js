@@ -138,19 +138,28 @@ function getUpcomingTenders(query = {}) {
     list = list.filter(t => t.authority_group && normalizeQuery(t.authority_group).includes(normalizeQuery(group)));
   }
 
-  // Gelecek İhaleler Zaman Aralığı Filtresi (Varsayılan: Gelecek 3 Ay)
-  const { timeframe = '3months' } = query;
+  // Gelecek İhaleler Zaman Aralığı Filtresi (Varsayılan: Gelecek 6 Ay, 1 Yıl seçeneği ile)
+  const { timeframe = '6months' } = query;
   if (timeframe && timeframe !== 'all') {
-    if (timeframe === '3months') {
-      const threeMonthsAhead = new Date(now.getTime() + 105 * 24 * 60 * 60 * 1000);
-      list = list.filter(t => new Date(t.tender_date) <= threeMonthsAhead || t.diff_ms >= 0);
+    if (timeframe === '1year') {
+      const oneYearAhead = new Date(now.getTime() + 370 * 24 * 60 * 60 * 1000);
+      list = list.filter(t => new Date(t.tender_date) <= oneYearAhead && t.diff_ms >= 0);
+    } else if (timeframe === '6months') {
+      const sixMonthsAhead = new Date(now.getTime() + 185 * 24 * 60 * 60 * 1000);
+      list = list.filter(t => new Date(t.tender_date) <= sixMonthsAhead && t.diff_ms >= 0);
+    } else if (timeframe === '3months') {
+      const threeMonthsAhead = new Date(now.getTime() + 95 * 24 * 60 * 60 * 1000);
+      list = list.filter(t => new Date(t.tender_date) <= threeMonthsAhead && t.diff_ms >= 0);
     } else if (timeframe === '1month') {
       const oneMonthAhead = new Date(now.getTime() + 35 * 24 * 60 * 60 * 1000);
-      list = list.filter(t => new Date(t.tender_date) <= oneMonthAhead);
+      list = list.filter(t => new Date(t.tender_date) <= oneMonthAhead && t.diff_ms >= 0);
     } else if (timeframe === '2weeks') {
       const twoWeeksAhead = new Date(now.getTime() + 18 * 24 * 60 * 60 * 1000);
-      list = list.filter(t => new Date(t.tender_date) <= twoWeeksAhead);
+      list = list.filter(t => new Date(t.tender_date) <= twoWeeksAhead && t.diff_ms >= 0);
     }
+  } else {
+    // 'all': Gelecekteki tüm ihaleler
+    list = list.filter(t => t.diff_ms >= 0);
   }
 
   if (sort === 'budget-desc') {

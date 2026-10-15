@@ -12,7 +12,7 @@ const AppState = {
   selectedCity: 'all',
   selectedSort: 'default',
   winnersTimeframe: '1year', // Varsayılan: Son 1 Yıl
-  upcomingTimeframe: '3months', // Varsayılan: Gelecek 3 Ay
+  upcomingTimeframe: '6months', // Varsayılan: Gelecek 6 Ay (1 Yıl ve 3 Ay seçenekleri ile)
   upcomingTenders: [],
   winningCompanies: [],
   allCompanies: [],
@@ -283,7 +283,11 @@ async function fetchUpcomingTenders() {
     const json = await res.json();
     if (json.success) {
       AppState.upcomingTenders = json.data;
-      const tfText = AppState.upcomingTimeframe === '3months' ? 'Gelecek 3 Ay' : AppState.upcomingTimeframe === '1month' ? '1 Ay' : AppState.upcomingTimeframe === '2weeks' ? '2 Hafta' : 'Tümü';
+      const tfText = AppState.upcomingTimeframe === '1year' ? 'Gelecek 1 Yıl' :
+                     AppState.upcomingTimeframe === '6months' ? 'Gelecek 6 Ay' :
+                     AppState.upcomingTimeframe === '3months' ? 'Gelecek 3 Ay' :
+                     AppState.upcomingTimeframe === '1month' ? '1 Ay' :
+                     AppState.upcomingTimeframe === '2weeks' ? '2 Hafta' : 'Tümü';
       DOM.upcomingBadgeCount.textContent = `${json.count} İhale (${tfText})`;
       const topUpEl = document.getElementById('topUpcomingCount');
       if (topUpEl) topUpEl.textContent = json.count;
@@ -304,8 +308,10 @@ function updateTimeframeLabels() {
     DOM.winnersTimeframeLabel.innerHTML = `Geçmiş İhale Kapsamı: <strong>${wText}</strong>`;
   }
   if (DOM.upcomingTimeframeLabel) {
-    let uText = 'Gelecek 3 Ay (15 Ekim 2026 - 15 Ocak 2027)';
-    if (AppState.upcomingTimeframe === '1month') uText = 'Gelecek 1 Ay (15 Ekim 2026 - 15 Kasım 2026)';
+    let uText = 'Gelecek 6 Ay (15 Ekim 2026 - 15 Nisan 2027)';
+    if (AppState.upcomingTimeframe === '1year') uText = 'Gelecek 1 Yıl (15 Ekim 2026 - 15 Ekim 2027)';
+    else if (AppState.upcomingTimeframe === '3months') uText = 'Gelecek 3 Ay (15 Ekim 2026 - 15 Ocak 2027)';
+    else if (AppState.upcomingTimeframe === '1month') uText = 'Gelecek 1 Ay (15 Ekim 2026 - 15 Kasım 2026)';
     else if (AppState.upcomingTimeframe === '2weeks') uText = 'Gelecek 2 Hafta (15 - 31 Ekim 2026)';
     else if (AppState.upcomingTimeframe === 'all') uText = 'Tüm Gelecek İhaleler';
     DOM.upcomingTimeframeLabel.innerHTML = `Gelecek İhale Kapsamı: <strong>${uText}</strong>`;
