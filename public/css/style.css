@@ -461,13 +461,19 @@ body:not(.mobile-frame-active) .app-container {
   color: var(--danger-rose);
 }
 
-/* Hızlı Firma & Trafo Kısayolları (Sade Mavi-Beyaz Hap Butonlar) */
+/* Hızlı Firma & Kategori Kısayolları (Sıfırlanabilir, Silinebilir ve Eklenebilir) */
+.quick-tags-scroller-wrap {
+  width: 100%;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
 .quick-tags-scroller {
   display: flex;
+  align-items: center;
   gap: 6px;
   overflow-x: auto;
   padding-bottom: 6px;
-  margin-bottom: 6px;
   scrollbar-width: none;
 }
 
@@ -475,32 +481,397 @@ body:not(.mobile-frame-active) .app-container {
   display: none;
 }
 
-.quick-tag-btn {
+/* Hızlı Filtreleri Sıfırlama Butonu */
+.quick-tag-reset-btn {
   flex-shrink: 0;
-  background: #eff6ff;
-  border: 1px solid #bfdbfe;
-  color: #1d4ed8;
-  padding: 5px 11px;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  color: #475569;
+  padding: 5px 10px;
   border-radius: 8px;
   font-size: 0.72rem;
   font-weight: 700;
   cursor: pointer;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
   transition: all 0.2s ease;
 }
 
-.quick-tag-btn:hover {
+.quick-tag-reset-btn:hover {
+  background: #e2e8f0;
+  border-color: #94a3b8;
+  color: #1e293b;
+}
+
+.quick-tag-reset-btn.has-active-filter {
+  background: #fee2e2;
+  border-color: #fca5a5;
+  color: #dc2626;
+  font-weight: 800;
+  box-shadow: 0 1px 4px rgba(220, 38, 38, 0.15);
+}
+
+.quick-tag-reset-btn.has-active-filter:hover {
+  background: #fecdd3;
+  border-color: #f87171;
+}
+
+/* Dinamik Çipler Konteyneri */
+.quick-tags-container {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+/* Her Bir Hızlı Filtre Çipi (Filtreleme + Silme Butonu İçerir) */
+.quick-tag-chip {
+  flex-shrink: 0;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1d4ed8;
+  padding: 3px 5px 3px 10px;
+  border-radius: 8px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.quick-tag-chip:hover {
   background: #dbeafe;
   border-color: #93c5fd;
 }
 
-.quick-tag-btn.active {
+.quick-tag-chip.active {
   background: #2563eb;
   color: #ffffff;
-  border-color: #2563eb;
+  border-color: #1d4ed8;
   box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
+}
+
+.quick-tag-chip-btn {
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 0;
+}
+
+/* Çip Üzerindeki Silme (x) Butonu */
+.quick-tag-chip-del {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 17px;
+  height: 17px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  opacity: 0.55;
+  transition: all 0.15s ease;
+  padding: 0;
+}
+
+.quick-tag-chip-del:hover {
+  opacity: 1;
+  background: rgba(220, 38, 38, 0.18);
+  color: #dc2626;
+}
+
+.quick-tag-chip.active .quick-tag-chip-del:hover {
+  background: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+  opacity: 1;
+}
+
+/* Ekle & Varsayılanlara Dön Butonları */
+.quick-tag-btn-action {
+  flex-shrink: 0;
+  padding: 5px 9px;
+  border-radius: 8px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s ease;
+}
+
+.quick-tag-add-btn {
+  background: #ffffff;
+  border: 1px dashed #3b82f6;
+  color: #2563eb;
+}
+
+.quick-tag-add-btn:hover {
+  background: #eff6ff;
+  border-style: solid;
+}
+
+.quick-tag-restore-btn {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: #64748b;
+}
+
+.quick-tag-restore-btn:hover {
+  background: #f1f5f9;
+  color: #334155;
+}
+
+/* Aktif Filtreler ve Toplu Temizleme Barı */
+.active-filters-bar {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 6px 12px;
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.active-filters-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.active-filters-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #475569;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.active-filters-list {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.active-filter-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1e40af;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.active-filter-pill i {
+  cursor: pointer;
+  font-size: 0.8rem;
+  opacity: 0.65;
+  transition: all 0.15s ease;
+}
+
+.active-filter-pill i:hover {
+  opacity: 1;
+  color: #dc2626;
+}
+
+.btn-clear-all-filters {
+  background: #fef2f2;
+  border: 1px solid #fecdd3;
+  color: #b91c1c;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s ease;
+}
+
+.btn-clear-all-filters:hover {
+  background: #fee2e2;
+  border-color: #fca5a5;
+  color: #991b1b;
+}
+
+/* Yeni Hızlı Filtre Ekleme Modalı */
+.quick-filter-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.quick-filter-modal-card {
+  background: #ffffff;
+  border-radius: 16px;
+  max-width: 420px;
+  width: 100%;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.18);
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+  animation: modalScaleUp 0.2s ease;
+}
+
+@keyframes modalScaleUp {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.modal-card-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modal-card-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.modal-card-title i {
+  color: #2563eb;
+  font-size: 1.1rem;
+}
+
+.modal-close-btn {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.modal-close-btn:hover {
+  background: #f1f5f9;
+  color: #334155;
+}
+
+.modal-card-body {
+  padding: 20px;
+}
+
+.modal-card-desc {
+  font-size: 0.82rem;
+  color: #64748b;
+  margin-bottom: 16px;
+  line-height: 1.45;
+}
+
+.modal-input-group {
+  margin-bottom: 20px;
+}
+
+.modal-input-group label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #334155;
+  margin-bottom: 6px;
+}
+
+.modal-input-group input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #0f172a;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.modal-input-group input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.modal-actions-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.btn-modal-cancel {
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  color: #475569;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-modal-cancel:hover {
+  background: #e2e8f0;
+  color: #1e293b;
+}
+
+.btn-modal-save {
+  background: #2563eb;
+  border: 1px solid #1d4ed8;
+  color: #ffffff;
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.btn-modal-save:hover {
+  background: #1d4ed8;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
 }
 
 /* Sektör Çipleri */

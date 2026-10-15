@@ -17,7 +17,7 @@
   <!-- Remix Icon -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css">
 
-  <link rel="stylesheet" href="/css/style.css?v=9">
+  <link rel="stylesheet" href="/css/style.css?v=10">
 </head>
 <body class="mobile-frame-active">
 
@@ -103,17 +103,22 @@
           </button>
         </div>
 
-        <!-- Hızlı Kategori & Firma Kısayolları -->
-        <div class="quick-tags-scroller">
-          <button class="quick-tag-btn" data-search="trafo"><i class="ri-flashlight-fill"></i> Trafo Merkezleri</button>
-          <button class="quick-tag-btn" data-search="İTM"><i class="ri-radar-fill"></i> TEİAŞ İTM Serisi</button>
-          <button class="quick-tag-btn" data-search="çukurca"><i class="ri-map-pin-2-fill"></i> Çukurca TM</button>
-          <button class="quick-tag-btn" data-search="girişim elektrik"><i class="ri-building-line"></i> Girişim Elektrik (GESAN)</button>
-          <button class="quick-tag-btn" data-search="europower"><i class="ri-cpu-line"></i> Europower Enerji (EUPWR)</button>
-          <button class="quick-tag-btn" data-search="astor"><i class="ri-shield-flash-line"></i> Astor Enerji (ASTOR)</button>
-          <button class="quick-tag-btn" data-search="kontrolmatik"><i class="ri-settings-4-line"></i> Kontrolmatik (KONTR)</button>
-          <button class="quick-tag-btn" data-search="peak pv"><i class="ri-sun-line"></i> Peak PV Solar</button>
-          <button class="quick-tag-btn" data-search="teiaş"><i class="ri-government-line"></i> TEİAŞ / TEDAŞ</button>
+        <!-- Hızlı Kategori & Firma Kısayolları (Sıfırlanabilir, Silinebilir ve Eklenebilir) -->
+        <div class="quick-tags-scroller-wrap">
+          <div class="quick-tags-scroller" id="quickTagsScroller">
+            <button class="quick-tag-reset-btn" id="btnResetQuickFilters" title="Tüm arama ve filtreleri sıfırla">
+              <i class="ri-refresh-line"></i> Sıfırla
+            </button>
+            <div class="quick-tags-container" id="quickTagsContainer">
+              <!-- JS dinamik olarak butonları ve silme (x) ikonlarını basacak -->
+            </div>
+            <button class="quick-tag-btn-action quick-tag-add-btn" id="btnAddQuickFilterBtn" title="Yeni hızlı arama filtresi ekle">
+              <i class="ri-add-line"></i> Filtre Ekle
+            </button>
+            <button class="quick-tag-btn-action quick-tag-restore-btn" id="btnRestoreQuickFiltersBtn" title="Varsayılan filtreleri geri yükle">
+              <i class="ri-history-line"></i> Varsayılanlar
+            </button>
+          </div>
         </div>
 
         <!-- Sektör Çipleri -->
@@ -144,6 +149,17 @@
               <option value="all">Tüm İller</option>
             </select>
           </div>
+        </div>
+
+        <!-- Aktif Filtreler ve Toplu Temizleme Barı -->
+        <div class="active-filters-bar" id="activeFiltersBar" style="display: none;">
+          <div class="active-filters-left">
+            <span class="active-filters-title"><i class="ri-filter-3-line"></i> Aktif:</span>
+            <div class="active-filters-list" id="activeFiltersList"></div>
+          </div>
+          <button class="btn-clear-all-filters" id="btnClearAllFiltersBtn" title="Tüm filtreleri ve aramayı sıfırla">
+            <i class="ri-close-circle-line"></i> Tümünü Temizle
+          </button>
         </div>
       </section>
 
@@ -427,6 +443,27 @@
         </div>
       </div>
 
+      <!-- YENİ HIZLI FİLTRE EKLEME MODALI -->
+      <div class="quick-filter-modal-overlay" id="addQuickFilterModal" style="display: none;">
+        <div class="quick-filter-modal-card">
+          <div class="modal-card-header">
+            <div class="modal-card-title"><i class="ri-filter-3-line"></i> Yeni Hızlı Filtre Ekle</div>
+            <button class="modal-close-btn" id="btnCloseAddFilterModal"><i class="ri-close-line"></i></button>
+          </div>
+          <div class="modal-card-body">
+            <p class="modal-card-desc">Sıkça aradığınız bir kelime veya firmayı (ör: <em>Kablo, Trafo, Siemens, GES</em>) hızlı arama filtresi olarak ekleyin:</p>
+            <div class="modal-input-group">
+              <label for="inputNewFilterLabel">Filtre Adı / Aranacak Kelime</label>
+              <input type="text" id="inputNewFilterLabel" placeholder="Örn: Kablo veya Siemens" autocomplete="off" maxlength="35">
+            </div>
+            <div class="modal-actions-row">
+              <button class="btn-modal-cancel" id="btnCancelAddFilter">Vazgeç</button>
+              <button class="btn-modal-save" id="btnSaveNewFilter"><i class="ri-check-line"></i> Filtreyi Kaydet</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- TOAST BİLDİRİMİ -->
       <div class="toast-notification" id="toastMessage">
         <i class="ri-checkbox-circle-fill"></i>
@@ -436,6 +473,6 @@
     </main>
   </div>
 
-  <script src="/js/app.js?v=9"></script>
+  <script src="/js/app.js?v=10"></script>
 </body>
 </html>

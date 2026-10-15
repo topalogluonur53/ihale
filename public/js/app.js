@@ -3,6 +3,19 @@
  * İstemci Tarafı Ana Uygulama Mantığı
  */
 
+// Varsayılan Hızlı Kategori & Firma Filtreleri (Sıfırlanabilir, Silinebilir ve Eklenebilir)
+const DEFAULT_QUICK_FILTERS = [
+  { id: 'qf-trafo', label: 'Trafo Merkezleri', query: 'trafo', icon: 'ri-flashlight-fill' },
+  { id: 'qf-itm', label: 'TEİAŞ İTM Serisi', query: 'İTM', icon: 'ri-radar-fill' },
+  { id: 'qf-cukurca', label: 'Çukurca TM', query: 'çukurca', icon: 'ri-map-pin-2-fill' },
+  { id: 'qf-gesan', label: 'Girişim Elektrik (GESAN)', query: 'girişim elektrik', icon: 'ri-building-line' },
+  { id: 'qf-europower', label: 'Europower Enerji (EUPWR)', query: 'europower', icon: 'ri-cpu-line' },
+  { id: 'qf-astor', label: 'Astor Enerji (ASTOR)', query: 'astor', icon: 'ri-shield-flash-line' },
+  { id: 'qf-kontr', label: 'Kontrolmatik (KONTR)', query: 'kontrolmatik', icon: 'ri-settings-4-line' },
+  { id: 'qf-peak', label: 'Peak PV Solar', query: 'peak pv', icon: 'ri-sun-line' },
+  { id: 'qf-teias', label: 'TEİAŞ / TEDAŞ', query: 'teiaş', icon: 'ri-government-line' }
+];
+
 // Uygulama Durumu (State)
 const AppState = {
   currentTab: 'tabWinners', // İhaleHaber tarzı varsayılan olarak Sonuçlar & Katılanlar açık
@@ -24,6 +37,7 @@ const AppState = {
     "Astor Enerji A.Ş. (ASTOR)"
   ],
   companyViewMode: 'tracked', // 'tracked' | 'directory'
+  quickFilters: JSON.parse(localStorage.getItem('kik_user_quick_filters') || 'null') || [...DEFAULT_QUICK_FILTERS],
   cities: [],
   isSyncing: false,
   theme: localStorage.getItem('kik_theme') || 'light',
@@ -67,6 +81,19 @@ const DOM = {
   // Filtreler
   globalSearchInput: document.getElementById('globalSearchInput'),
   btnClearSearch: document.getElementById('btnClearSearch'),
+  quickTagsScroller: document.getElementById('quickTagsScroller'),
+  quickTagsContainer: document.getElementById('quickTagsContainer'),
+  btnResetQuickFilters: document.getElementById('btnResetQuickFilters'),
+  btnAddQuickFilterBtn: document.getElementById('btnAddQuickFilterBtn'),
+  btnRestoreQuickFiltersBtn: document.getElementById('btnRestoreQuickFiltersBtn'),
+  activeFiltersBar: document.getElementById('activeFiltersBar'),
+  activeFiltersList: document.getElementById('activeFiltersList'),
+  btnClearAllFiltersBtn: document.getElementById('btnClearAllFiltersBtn'),
+  addQuickFilterModal: document.getElementById('addQuickFilterModal'),
+  inputNewFilterLabel: document.getElementById('inputNewFilterLabel'),
+  btnSaveNewFilter: document.getElementById('btnSaveNewFilter'),
+  btnCancelAddFilter: document.getElementById('btnCancelAddFilter'),
+  btnCloseAddFilterModal: document.getElementById('btnCloseAddFilterModal'),
   filterChips: document.querySelectorAll('.filter-chip'),
   groupFilterSelect: document.getElementById('groupFilterSelect'),
   cityFilterSelect: document.getElementById('cityFilterSelect'),
@@ -132,6 +159,8 @@ document.addEventListener('DOMContentLoaded', () => {
   initThemeAndFrame();
   initClock();
   setupEventListeners();
+  renderQuickFilters();
+  updateActiveFiltersBar();
   loadAllData();
 });
 
@@ -152,6 +181,8 @@ function setupEventListeners() {
     clearTimeout(searchTimeout);
     searchTimeout = setTimeout(() => {
       AppState.searchQuery = val;
+      renderQuickFilters();
+      updateActiveFiltersBar();
       refreshCurrentView();
     }, 250);
   });
@@ -160,31 +191,53 @@ function setupEventListeners() {
     DOM.globalSearchInput.value = '';
     DOM.btnClearSearch.style.display = 'none';
     AppState.searchQuery = '';
-    document.querySelectorAll('.quick-tag-btn').forEach(b => b.classList.remove('active'));
+    renderQuickFilters();
+    updateActiveFiltersBar();
     refreshCurrentView();
   });
 
-  // Hızlı Trafo & Firma Kısayolları (Girişim Elektrik, Europower, Peak PV, vb.)
-  const quickTags = document.querySelectorAll('.quick-tag-btn');
-  quickTags.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const searchVal = btn.dataset.search;
-      if (DOM.globalSearchInput.value.toLowerCase() === searchVal.toLowerCase()) {
-        DOM.globalSearchInput.value = '';
-        DOM.btnClearSearch.style.display = 'none';
-        AppState.searchQuery = '';
-        btn.classList.remove('active');
-      } else {
-        quickTags.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        DOM.globalSearchInput.value = searchVal;
-        DOM.btnClearSearch.style.display = 'block';
-        AppState.searchQuery = searchVal;
+  // Hızlı Filtreleri ve Aramayı Sıfırlama Butonları
+  if (DOM.btnResetQuickFilters) {
+    DOM.btnResetQuickFilters.addEventListener('click', resetAllFilters);
+  }
+  if (DOM.btnClearAllFiltersBtn) {
+    DOM.btnClearAllFiltersBtn.addEventListener('click', resetAllFilters);
+  }
+  if (DOM.btnResetFilters) {
+    DOM.btnResetFilters.addEventListener('click', resetAllFilters);
+  }
+
+  // Yeni Filtre Ekleme ve Varsayılanları Geri Yükleme Butonları
+  if (DOM.btnAddQuickFilterBtn) {
+    DOM.btnAddQuickFilterBtn.addEventListener('click', openAddQuickFilterModal);
+  }
+  if (DOM.btnRestoreQuickFiltersBtn) {
+    DOM.btnRestoreQuickFiltersBtn.addEventListener('click', restoreDefaultQuickFilters);
+  }
+  if (DOM.btnCloseAddFilterModal) {
+    DOM.btnCloseAddFilterModal.addEventListener('click', closeAddQuickFilterModal);
+  }
+  if (DOM.btnCancelAddFilter) {
+    DOM.btnCancelAddFilter.addEventListener('click', closeAddQuickFilterModal);
+  }
+  if (DOM.btnSaveNewFilter) {
+    DOM.btnSaveNewFilter.addEventListener('click', saveNewQuickFilter);
+  }
+  if (DOM.inputNewFilterLabel) {
+    DOM.inputNewFilterLabel.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        saveNewQuickFilter();
       }
-      refreshCurrentView();
-      showToast(`${searchVal.toUpperCase()} ihaleleri listelendi`);
     });
-  });
+  }
+  if (DOM.addQuickFilterModal) {
+    DOM.addQuickFilterModal.addEventListener('click', (e) => {
+      if (e.target === DOM.addQuickFilterModal) {
+        closeAddQuickFilterModal();
+      }
+    });
+  }
 
   // Zaman Kapsamı Seçicileri (Son 1 Yıl & Gelecek 3 Ay)
   const wChips = document.querySelectorAll('#winnersTimeframeGroup .timeframe-chip');
@@ -215,6 +268,7 @@ function setupEventListeners() {
       DOM.filterChips.forEach(c => c.classList.remove('active'));
       chip.classList.add('active');
       AppState.selectedType = chip.dataset.type;
+      updateActiveFiltersBar();
       refreshCurrentView();
     });
   });
@@ -222,27 +276,14 @@ function setupEventListeners() {
   // Kurum Grubu Seçimi
   DOM.groupFilterSelect.addEventListener('change', (e) => {
     AppState.selectedGroup = e.target.value;
+    updateActiveFiltersBar();
     refreshCurrentView();
   });
 
   // Şehir Seçimi
   DOM.cityFilterSelect.addEventListener('change', (e) => {
     AppState.selectedCity = e.target.value;
-    refreshCurrentView();
-  });
-
-  // Filtre Sıfırlama
-  DOM.btnResetFilters.addEventListener('click', () => {
-    AppState.searchQuery = '';
-    AppState.selectedType = 'all';
-    AppState.selectedGroup = 'all';
-    AppState.selectedCity = 'all';
-    DOM.globalSearchInput.value = '';
-    DOM.btnClearSearch.style.display = 'none';
-    DOM.groupFilterSelect.value = 'all';
-    DOM.cityFilterSelect.value = 'all';
-    DOM.filterChips.forEach(c => c.classList.toggle('active', c.dataset.type === 'all'));
-    DOM.filterInfoStrip.style.display = 'none';
+    updateActiveFiltersBar();
     refreshCurrentView();
   });
 
@@ -357,6 +398,286 @@ function toggleAllCardsInContainer(container) {
     c.classList.toggle('expanded', anyClosed);
   });
   showToast(anyClosed ? 'Tüm kart detayları açıldı' : 'Tüm kartlar daraltıldı');
+}
+
+// ============================================================
+// HIZLI FİLTRELER & SIFIRLAMA / SİLME İŞLEMLERİ
+// ============================================================
+
+/**
+ * HTML Özel Karakter Kaçışı
+ */
+function escapeHtml(str) {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+/**
+ * Hızlı Filtreleri Render Eder (Sıfırlanabilir, Silinebilir ve Seçilebilir)
+ */
+function renderQuickFilters() {
+  if (!DOM.quickTagsContainer) return;
+  DOM.quickTagsContainer.innerHTML = '';
+
+  const currentSearch = (AppState.searchQuery || '').trim().toLowerCase();
+
+  AppState.quickFilters.forEach(tag => {
+    const isTagActive = currentSearch && currentSearch === tag.query.toLowerCase();
+
+    const chip = document.createElement('div');
+    chip.className = `quick-tag-chip ${isTagActive ? 'active' : ''}`;
+    chip.dataset.id = tag.id;
+    chip.dataset.query = tag.query;
+
+    chip.innerHTML = `
+      <button type="button" class="quick-tag-chip-btn" title="Filtrele: ${escapeHtml(tag.label)}">
+        <i class="${tag.icon || 'ri-hashtag'}"></i>
+        <span>${escapeHtml(tag.label)}</span>
+      </button>
+      <button type="button" class="quick-tag-chip-del" title="Bu filtreyi sil" data-id="${tag.id}">
+        <i class="ri-close-line"></i>
+      </button>
+    `;
+
+    // Filtreleme / Seçme veya Seçimi Kaldırma (Toggle)
+    const chipBtn = chip.querySelector('.quick-tag-chip-btn');
+    chipBtn.addEventListener('click', () => {
+      toggleQuickFilter(tag);
+    });
+
+    // Filtre Butonunu Listeden Silme (x butonu)
+    const delBtn = chip.querySelector('.quick-tag-chip-del');
+    delBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      deleteQuickFilter(tag.id, tag.label);
+    });
+
+    DOM.quickTagsContainer.appendChild(chip);
+  });
+
+  updateActiveFiltersBar();
+}
+
+/**
+ * Hızlı Filtreyi Seçer veya Aktifse Kaldırır (Toggle)
+ */
+function toggleQuickFilter(tag) {
+  const currentSearch = (AppState.searchQuery || '').trim().toLowerCase();
+  const tagQuery = tag.query.toLowerCase();
+
+  if (currentSearch === tagQuery) {
+    // Zaten aktifse sıfırla / kapat
+    AppState.searchQuery = '';
+    if (DOM.globalSearchInput) DOM.globalSearchInput.value = '';
+    if (DOM.btnClearSearch) DOM.btnClearSearch.style.display = 'none';
+    showToast(`"${tag.label}" filtresi kaldırıldı`);
+  } else {
+    // Aktif hale getir
+    AppState.searchQuery = tag.query;
+    if (DOM.globalSearchInput) DOM.globalSearchInput.value = tag.query;
+    if (DOM.btnClearSearch) DOM.btnClearSearch.style.display = 'block';
+    showToast(`"${tag.label}" filtrelendi`);
+  }
+
+  renderQuickFilters();
+  refreshCurrentView();
+}
+
+/**
+ * Hızlı Filtre Butonunu Kalıcı Olarak Siler
+ */
+function deleteQuickFilter(tagId, tagLabel) {
+  const targetTag = AppState.quickFilters.find(t => t.id === tagId);
+  const isDeletedTagActive = targetTag && (AppState.searchQuery || '').toLowerCase() === targetTag.query.toLowerCase();
+
+  AppState.quickFilters = AppState.quickFilters.filter(t => t.id !== tagId);
+  localStorage.setItem('kik_user_quick_filters', JSON.stringify(AppState.quickFilters));
+
+  if (isDeletedTagActive) {
+    AppState.searchQuery = '';
+    if (DOM.globalSearchInput) DOM.globalSearchInput.value = '';
+    if (DOM.btnClearSearch) DOM.btnClearSearch.style.display = 'none';
+    refreshCurrentView();
+  }
+
+  renderQuickFilters();
+  showToast(`"${tagLabel || 'Filtre'}" silindi`);
+}
+
+/**
+ * Varsayılan Hızlı Filtreleri Geri Yükler
+ */
+function restoreDefaultQuickFilters() {
+  AppState.quickFilters = JSON.parse(JSON.stringify(DEFAULT_QUICK_FILTERS));
+  localStorage.setItem('kik_user_quick_filters', JSON.stringify(AppState.quickFilters));
+  renderQuickFilters();
+  showToast('Varsayılan filtre butonları geri yüklendi');
+}
+
+/**
+ * Tüm Arama ve Filtreleri Tek Seferde Sıfırlar
+ */
+function resetAllFilters() {
+  AppState.searchQuery = '';
+  AppState.selectedType = 'all';
+  AppState.selectedGroup = 'all';
+  AppState.selectedCity = 'all';
+
+  if (DOM.globalSearchInput) DOM.globalSearchInput.value = '';
+  if (DOM.btnClearSearch) DOM.btnClearSearch.style.display = 'none';
+  if (DOM.groupFilterSelect) DOM.groupFilterSelect.value = 'all';
+  if (DOM.cityFilterSelect) DOM.cityFilterSelect.value = 'all';
+
+  if (DOM.filterChips) {
+    DOM.filterChips.forEach(c => c.classList.toggle('active', c.dataset.type === 'all'));
+  }
+
+  renderQuickFilters();
+  updateActiveFiltersBar();
+  refreshCurrentView();
+  showToast('Tüm filtreler ve arama sıfırlandı');
+}
+
+/**
+ * Aktif Filtreler Bandını Günceller
+ */
+function updateActiveFiltersBar() {
+  const hasSearch = !!(AppState.searchQuery || '').trim();
+  const hasType = AppState.selectedType && AppState.selectedType !== 'all';
+  const hasGroup = AppState.selectedGroup && AppState.selectedGroup !== 'all';
+  const hasCity = AppState.selectedCity && AppState.selectedCity !== 'all';
+
+  const hasAnyFilter = hasSearch || hasType || hasGroup || hasCity;
+
+  // Sıfırla butonuna aktif filtre efekti ver
+  if (DOM.btnResetQuickFilters) {
+    DOM.btnResetQuickFilters.classList.toggle('has-active-filter', hasAnyFilter);
+    DOM.btnResetQuickFilters.title = hasAnyFilter ? 'Tüm Filtreleri Sıfırla (Aktif Filtreler Var)' : 'Arama ve Filtreleri Sıfırla';
+  }
+
+  if (!DOM.activeFiltersBar || !DOM.activeFiltersList) return;
+
+  if (!hasAnyFilter) {
+    DOM.activeFiltersBar.style.display = 'none';
+    DOM.activeFiltersList.innerHTML = '';
+    return;
+  }
+
+  DOM.activeFiltersBar.style.display = 'flex';
+  DOM.activeFiltersList.innerHTML = '';
+
+  if (hasSearch) {
+    const pill = document.createElement('div');
+    pill.className = 'active-filter-pill';
+    pill.innerHTML = `<span>Arama: "${escapeHtml(AppState.searchQuery)}"</span> <i class="ri-close-line" title="Aramayı temizle"></i>`;
+    pill.querySelector('i').addEventListener('click', () => {
+      AppState.searchQuery = '';
+      if (DOM.globalSearchInput) DOM.globalSearchInput.value = '';
+      if (DOM.btnClearSearch) DOM.btnClearSearch.style.display = 'none';
+      renderQuickFilters();
+      refreshCurrentView();
+      showToast('Arama filtresi kaldırıldı');
+    });
+    DOM.activeFiltersList.appendChild(pill);
+  }
+
+  if (hasType) {
+    const pill = document.createElement('div');
+    pill.className = 'active-filter-pill';
+    pill.innerHTML = `<span>Sektör: ${escapeHtml(AppState.selectedType)}</span> <i class="ri-close-line" title="Sektör filtresini kaldır"></i>`;
+    pill.querySelector('i').addEventListener('click', () => {
+      AppState.selectedType = 'all';
+      if (DOM.filterChips) {
+        DOM.filterChips.forEach(c => c.classList.toggle('active', c.dataset.type === 'all'));
+      }
+      updateActiveFiltersBar();
+      refreshCurrentView();
+      showToast('Sektör filtresi kaldırıldı');
+    });
+    DOM.activeFiltersList.appendChild(pill);
+  }
+
+  if (hasGroup) {
+    const pill = document.createElement('div');
+    pill.className = 'active-filter-pill';
+    pill.innerHTML = `<span>Kurum: ${escapeHtml(AppState.selectedGroup)}</span> <i class="ri-close-line" title="Kurum filtresini kaldır"></i>`;
+    pill.querySelector('i').addEventListener('click', () => {
+      AppState.selectedGroup = 'all';
+      if (DOM.groupFilterSelect) DOM.groupFilterSelect.value = 'all';
+      updateActiveFiltersBar();
+      refreshCurrentView();
+      showToast('Kurum filtresi kaldırıldı');
+    });
+    DOM.activeFiltersList.appendChild(pill);
+  }
+
+  if (hasCity) {
+    const pill = document.createElement('div');
+    pill.className = 'active-filter-pill';
+    pill.innerHTML = `<span>İl: ${escapeHtml(AppState.selectedCity)}</span> <i class="ri-close-line" title="İl filtresini kaldır"></i>`;
+    pill.querySelector('i').addEventListener('click', () => {
+      AppState.selectedCity = 'all';
+      if (DOM.cityFilterSelect) DOM.cityFilterSelect.value = 'all';
+      updateActiveFiltersBar();
+      refreshCurrentView();
+      showToast('İl filtresi kaldırıldı');
+    });
+    DOM.activeFiltersList.appendChild(pill);
+  }
+}
+
+/**
+ * Yeni Hızlı Filtre Modalı Açma / Kapatma / Kaydetme
+ */
+function openAddQuickFilterModal() {
+  if (!DOM.addQuickFilterModal) return;
+  DOM.addQuickFilterModal.style.display = 'flex';
+  if (DOM.inputNewFilterLabel) {
+    DOM.inputNewFilterLabel.value = '';
+    setTimeout(() => DOM.inputNewFilterLabel.focus(), 100);
+  }
+}
+
+function closeAddQuickFilterModal() {
+  if (DOM.addQuickFilterModal) {
+    DOM.addQuickFilterModal.style.display = 'none';
+  }
+}
+
+function saveNewQuickFilter() {
+  const val = (DOM.inputNewFilterLabel ? DOM.inputNewFilterLabel.value : '').trim();
+  if (!val) {
+    showToast('Lütfen filtre için bir kelime veya firma adı giriniz');
+    return;
+  }
+
+  // Zaten varsa uyarı ver ve seç
+  const existing = AppState.quickFilters.find(f => f.label.toLowerCase() === val.toLowerCase() || f.query.toLowerCase() === val.toLowerCase());
+  if (existing) {
+    showToast(`"${val}" filtresi zaten mevcut`);
+    closeAddQuickFilterModal();
+    toggleQuickFilter(existing);
+    return;
+  }
+
+  const newFilter = {
+    id: 'qf-' + Date.now(),
+    label: val,
+    query: val.toLowerCase(),
+    icon: 'ri-bookmark-3-line'
+  };
+
+  AppState.quickFilters.push(newFilter);
+  localStorage.setItem('kik_user_quick_filters', JSON.stringify(AppState.quickFilters));
+
+  closeAddQuickFilterModal();
+  renderQuickFilters();
+  showToast(`"${val}" hızlı filtre olarak eklendi`);
 }
 
 // ============================================================
@@ -534,6 +855,7 @@ async function triggerLiveSync() {
 // ============================================================
 function refreshCurrentView() {
   checkFilterInfoStrip();
+  updateActiveFiltersBar();
 
   if (AppState.currentTab === 'tabWinners') {
     fetchWinningCompanies();
