@@ -1,0 +1,17 @@
+{
+  "name": "kik-ihale-mobil-app",
+  "version": "1.0.0",
+  "description": "KİK EKAP Yaklaşan İhaleler ve İhaleyi Kazanan Firmalar Mobil Web Uygulaması",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "keywords": ["kik", "ekap", "ihale", "mobil", "web-app"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "express": "^5.3.0"
+  }
+}

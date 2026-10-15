@@ -1,0 +1,60 @@
+name: ihale-radar
+
+services:
+  ihale-radar:
+    container_name: ihale-radar
+    image: ihale-radar:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "3050:3050"
+    environment:
+      - PORT=3050
+      - NODE_ENV=production
+    x-casaos:
+      architectures:
+        - arm64
+        - arm
+        - amd64
+      main: ihale-radar
+      description:
+        en_us: "KİK & İhaleHaber Style Tender Radar - Substation & Contractor Tracking"
+        tr_tr: "KİK & İhaleHaber Tarzı İhale Radar - Trafo Merkezleri ve Katılan Firmalar Takip Portalı"
+      tagline:
+        en_us: "Tender and Contractor Tracking Portal"
+        tr_tr: "İhale & Yüklenici Takip Portalı"
+      developer: "topalogluonur53"
+      author: "topalogluonur53"
+      icon: "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
+      title:
+        en_us: "İhale Radar"
+        tr_tr: "İhale Radar"
+      category: "Utilities"
+      port_map: "3050"
+      scheme: "http"
+      index: "/"
+
+x-casaos:
+  architectures:
+    - arm64
+    - arm
+    - amd64
+  main: ihale-radar
+  description:
+    en_us: "KİK & İhaleHaber Style Tender Radar - Substation & Contractor Tracking"
+    tr_tr: "KİK & İhaleHaber Tarzı İhale Radar - Trafo Merkezleri ve Katılan Firmalar Takip Portalı"
+  tagline:
+    en_us: "Tender and Contractor Tracking Portal"
+    tr_tr: "İhale & Yüklenici Takip Portalı"
+  developer: "topalogluonur53"
+  author: "topalogluonur53"
+  icon: "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
+  title:
+    en_us: "İhale Radar"
+    tr_tr: "İhale Radar"
+  category: "Utilities"
+  port_map: "3050"
+  scheme: "http"
+  index: "/"
