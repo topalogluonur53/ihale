@@ -18,6 +18,7 @@ Kamu İhale Kurumu (KİK), EKAP ve İhaleHaber standartlarında; **yaklaşan iha
   - **Geçmiş İhaleler (Sonuçlar):** Son 1 yıllık (15 Ekim 2025 - 15 Ekim 2026) kesinleşen ihaleler (1 yıl, 6 ay, 3 ay filtreli).
   - **Gelecek İhaleler (Yaklaşan):** Gelecek 3 aylık (15 Ekim 2026 - 15 Ocak 2027) ihaleler (3 ay, 1 ay, 2 hafta filtreli).
 - **🎨 Gözü Yormayan Mavi & Beyaz Tasarım:** Sade, ferah, gereksiz kartlardan arındırılmış yüksek okunabilirlik.
+- **🔄 GitHub Actions & Watchtower ile %100 Otomatik Güncelleme (CI/CD):** Kodunuzu GitHub'a gönderdiğiniz anda GitHub Actions Raspberry Pi (ARM64) için derler; CasaOS üzerindeki Watchtower yeni sürümü otomatik olarak çeker ve günceller.
 
 ---
 
@@ -36,55 +37,52 @@ Tarayıcınızdan erişin:
 
 ---
 
-## 🍓 CasaOS & Raspberry Pi Docker ile Deploy Etme
+## 🔄 GitHub Actions ile Otomatik Güncelleme Mimarisi (CI/CD)
 
-Bu proje, Raspberry Pi (ARM64 / ARMv7) ve x86_64 mimarileriyle %100 uyumlu `Dockerfile` ve CasaOS `docker-compose.yml` yapılandırmasını içerir.
+Projede tam otomatik continuous delivery (CD) boru hattı kuruludur:
 
-### Yöntem 1: CasaOS Web Panelinden Özel Uygulama Olarak Kurma (En Kolay)
+1. **GitHub'a Push:** `main` dalına yeni bir commit gönderildiğinde `.github/workflows/docker-publish.yml` iş akışı otomatik tetiklenir.
+2. **GitHub Actions Multi-Arch Derleme:** GitHub bulutunda QEMU ve Buildx ile hem **ARM64 (Raspberry Pi 4/5)** hem de AMD64 için Docker imajı derlenir.
+3. **GHCR Yayını:** İmaj `ghcr.io/topalogluonur53/ihale:latest` adresine yüklenir.
+4. **CasaOS Otomatik Çekme (Watchtower):** Raspberry Pi'nizde çalışan Watchtower servisi her 5 dakikada bir GHCR'ı kontrol eder. Yeni imaj tespit ettiğinde:
+   - Yeni imajı çeker (pull eder),
+   - Eski konteyneri kapatıp yeni sürüme geçirir,
+   - Eski imajı temizleyerek Raspberry Pi SD kartında yer açar.
+   - **Sizin Raspberry Pi'ye SSH ile bağlanıp tek bir komut bile yazmanıza gerek kalmaz!**
 
-1. CasaOS kontrol panelinize girin (`http://casaos.local` veya `http://[RASPBERRY_PI_IP]`).
-2. Ana ekrandaki **App Store** (Uygulama Mağazası) ikonuna tıklayın veya sağ üstteki **"+" (Özel Uygulama Yükle / Custom App)** butonuna basın.
-3. Sağ üst köşedeki **"Import" (İçe Aktar)** butonuna tıklayın.
-4. Bu repoda bulunan `docker-compose.yml` içeriğini yapıştırın veya dosyayı yükleyin.
-5. Port ayarının `3050:3050` olduğunu onaylayın ve **"Install" (Kur)** butonuna basın.
-6. CasaOS otomatik olarak Raspberry Pi üzerinde imajı derleyip başlatacaktır. CasaOS ana ekranından tek tıkla açabilirsiniz!
+> **Önemli Not (İlk Seferlik):** GitHub'da oluşturulan paketin Raspberry Pi tarafından şifresiz çekilebilmesi için:
+> - GitHub profilinizde **Packages** sekmesine gidin -> `ihale` paketine tıklayın.
+> - **Package Settings** -> En alttaki **Danger Zone** -> **Change package visibility** -> **Public** yapın.
 
-### Yöntem 2: Raspberry Pi SSH Terminalinden Docker ile Çalıştırma
+---
 
-Raspberry Pi terminalinde şu komutları çalıştırın:
+## 🍓 CasaOS & Raspberry Pi Kurulumu
+
+### Yöntem 1: CasaOS Web Panelinden Kurulum (Önerilen)
+
+1. Tarayıcınızdan Raspberry Pi'deki **CasaOS** paneline girin (`http://casaos.local` veya `http://[RASPBERRY_PI_IP]`).
+2. Ana ekranda sağ üstteki **"+" (Özel Uygulama Yükle / Install a customized app)** butonuna tıklayın.
+3. Açılan formun sağ üst köşesindeki **"İçe Aktar" (Import)** ikonuna tıklayın.
+4. Repodaki [`docker-compose.yml`](https://github.com/topalogluonur53/ihale/blob/main/docker-compose.yml) içeriğini yapıştırın ve **Submit** deyin.
+5. **"Install" (Kur)** butonuna basın. CasaOS otomatik olarak imajı çekecek ve ana ekranınıza simgesiyle ekleyecektir.
+6. Artık her GitHub güncellemesinde Watchtower arka planda uygulamayı otomatik güncelleyecektir!
+
+### Yöntem 2: Raspberry Pi SSH Terminalinden Çalıştırma
 
 ```bash
 # Repoyu klonlayın
 git clone https://github.com/topalogluonur53/ihale.git
 cd ihale
 
-# Docker Compose ile arka planda ayağa kaldırın
-docker compose up -d --build
-```
+# Konteynerleri arka planda başlatın (İhale Radar + Watchtower)
+docker compose up -d
 
-Konteyner durumu ve loglar için:
-```bash
+# Logları kontrol etmek için
 docker compose logs -f
 ```
 
 Erişim adresi:
-👉 **http://[RASPBERRY_PI_IP]:3050**
-
----
-
-## 📦 Docker Komutları (Doğrudan)
-
-```bash
-# İmajı oluşturun
-docker build -t ihale-radar:latest .
-
-# Konteyneri başlatın
-docker run -d \
-  --name ihale-radar \
-  --restart unless-stopped \
-  -p 3050:3050 \
-  ihale-radar:latest
-```
+👉 **`http://[RASPBERRY_PI_IP]:3050`**
 
 ---
 
@@ -92,21 +90,24 @@ docker run -d \
 
 ```
 ihale/
-├── Dockerfile              # Raspberry Pi ARM64/AMD64 uyumlu Docker derleme dosyası
-├── docker-compose.yml      # CasaOS uyumlu konteyner tanımı ve port 3050 eşlemesi
-├── .dockerignore           # Konteyner boyutunu hafifleten yoksayma listesi
-├── .gitignore              # Git takip dışı dosyalar
-├── package.json            # Node.js bağımlılıkları (Express, CORS)
-├── server.js               # Port 3050 Express REST API sunucusu
+├── .github/
+│   └── workflows/
+│       └── docker-publish.yml  # GitHub Actions Multi-Arch ARM64/AMD64 CI/CD
+├── Dockerfile                  # Raspberry Pi ARM64/AMD64 uyumlu Docker derleme dosyası
+├── docker-compose.yml          # CasaOS ve Watchtower otomatik güncelleme servisi
+├── .dockerignore               # Konteyner boyutunu hafifleten filtre
+├── .gitignore                  # Git takip dışı dosyalar
+├── package.json                # Node.js bağımlılıkları (Express, CORS)
+├── server.js                   # Port 3050 Express REST API sunucusu
 ├── services/
-│   ├── ekapService.js      # Arama, filtreleme, zaman kapsamı ve hesaplamalar
-│   └── mockData.js         # 1 yıllık geçmiş & 3 aylık gelecek ihaleler veri tabanı
+│   ├── ekapService.js          # Arama, filtreleme, zaman kapsamı ve hesaplamalar
+│   └── mockData.js             # 1 yıllık geçmiş & 3 aylık gelecek ihaleler veri tabanı
 └── public/
-    ├── index.html          # Gözü yormayan sade mavi-beyaz arayüz
+    ├── index.html              # Gözü yormayan sade mavi-beyaz arayüz
     ├── css/
-    │   └── style.css       # Tasarım sistemi tokens, kartlar, tablolar
+    │   └── style.css           # Tasarım sistemi tokens, kartlar, tablolar
     └── js/
-        └── app.js          # İstemci tarafı etkileşimler ve API entegrasyonu
+        └── app.js              # İstemci tarafı etkileşimler ve API entegrasyonu
 ```
 
 ---

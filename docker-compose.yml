@@ -3,16 +3,16 @@ name: ihale-radar
 services:
   ihale-radar:
     container_name: ihale-radar
-    image: ihale-radar:latest
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: ghcr.io/topalogluonur53/ihale:latest
+    pull_policy: always
     restart: unless-stopped
     ports:
       - "3050:3050"
     environment:
       - PORT=3050
       - NODE_ENV=production
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
     x-casaos:
       architectures:
         - arm64
@@ -20,21 +20,34 @@ services:
         - amd64
       main: ihale-radar
       description:
-        en_us: "KİK & İhaleHaber Style Tender Radar - Substation & Contractor Tracking"
         tr_tr: "KİK & İhaleHaber Tarzı İhale Radar - Trafo Merkezleri ve Katılan Firmalar Takip Portalı"
+        en_us: "KİK & İhaleHaber Style Tender Radar - Substation & Contractor Tracking"
       tagline:
-        en_us: "Tender and Contractor Tracking Portal"
-        tr_tr: "İhale & Yüklenici Takip Portalı"
+        tr_tr: "İhale & Yüklenici Takip Portalı (GitHub Actions Otomatik Güncelleme)"
+        en_us: "Tender and Contractor Tracking Portal (Auto-update enabled)"
       developer: "topalogluonur53"
       author: "topalogluonur53"
       icon: "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
       title:
-        en_us: "İhale Radar"
         tr_tr: "İhale Radar"
+        en_us: "İhale Radar"
       category: "Utilities"
       port_map: "3050"
       scheme: "http"
       index: "/"
+
+  # GitHub Actions'tan yeni imaj çıktığında CasaOS üzerinde otomatik çeken Watchtower servisi
+  watchtower:
+    container_name: ihale-radar-watchtower
+    image: containrrr/watchtower:latest
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - WATCHTOWER_CLEANUP=true
+      - WATCHTOWER_POLL_INTERVAL=300
+      - WATCHTOWER_LABEL_ENABLE=true
+    command: --interval 300 --cleanup
 
 x-casaos:
   architectures:
@@ -43,17 +56,17 @@ x-casaos:
     - amd64
   main: ihale-radar
   description:
-    en_us: "KİK & İhaleHaber Style Tender Radar - Substation & Contractor Tracking"
     tr_tr: "KİK & İhaleHaber Tarzı İhale Radar - Trafo Merkezleri ve Katılan Firmalar Takip Portalı"
+    en_us: "KİK & İhaleHaber Style Tender Radar - Substation & Contractor Tracking"
   tagline:
-    en_us: "Tender and Contractor Tracking Portal"
-    tr_tr: "İhale & Yüklenici Takip Portalı"
+    tr_tr: "İhale & Yüklenici Takip Portalı (GitHub Actions Otomatik Güncelleme)"
+    en_us: "Tender and Contractor Tracking Portal (Auto-update enabled)"
   developer: "topalogluonur53"
   author: "topalogluonur53"
   icon: "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
   title:
-    en_us: "İhale Radar"
     tr_tr: "İhale Radar"
+    en_us: "İhale Radar"
   category: "Utilities"
   port_map: "3050"
   scheme: "http"
