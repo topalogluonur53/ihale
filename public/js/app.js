@@ -852,7 +852,7 @@ function renderAnalytics() {
     <div class="leaderboard-card">
       <h3 class="card-subheading">
         <i class="ri-medal-line" style="color: var(--accent-gold);"></i>
-        İhaleHaber Lider Yükleniciler Listesi
+        Lider Yükleniciler Sıralaması
       </h3>
 
       <div class="leader-list">
@@ -969,7 +969,7 @@ function renderFavorites() {
 // DETAY MODALI (BOTTOM SHEET)
 // ============================================================
 function openWinnerDetail(winner) {
-  DOM.sheetTypeBadge.textContent = 'İhaleHaber Sonuç Raporu';
+  DOM.sheetTypeBadge.textContent = 'İhale Sonuç Raporu';
 
   // Katılan firmalar tablosu
   let biddersRows = '';
