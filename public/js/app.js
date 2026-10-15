@@ -285,6 +285,8 @@ async function fetchUpcomingTenders() {
       AppState.upcomingTenders = json.data;
       const tfText = AppState.upcomingTimeframe === '3months' ? 'Gelecek 3 Ay' : AppState.upcomingTimeframe === '1month' ? '1 Ay' : AppState.upcomingTimeframe === '2weeks' ? '2 Hafta' : 'Tümü';
       DOM.upcomingBadgeCount.textContent = `${json.count} İhale (${tfText})`;
+      const topUpEl = document.getElementById('topUpcomingCount');
+      if (topUpEl) topUpEl.textContent = json.count;
       renderUpcomingTenders();
       if (AppState.currentTab === 'tabFavorites') renderFavorites();
     }
@@ -425,6 +427,10 @@ function switchTab(tabId) {
     item.classList.toggle('active', item.dataset.tab === tabId);
   });
 
+  document.querySelectorAll('.segment-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.tab === tabId);
+  });
+
   DOM.tabPanels.forEach(panel => {
     panel.classList.toggle('active', panel.id === tabId);
   });
@@ -487,10 +493,10 @@ function renderWinningCompanies() {
                   <tr class="${rowClass}">
                     <td><span class="rank-badge ${b.rank === 1 ? 'rank-1' : ''}">${b.rank}</span></td>
                     <td>
-                      <div style="font-weight: 600; color: #fff;">${b.company_name}</div>
-                      <div style="font-size: 0.65rem; color: var(--text-muted);">${b.city || ''}</div>
+                      <div style="font-weight: 700; color: #0f172a;">${b.company_name}</div>
+                      <div style="font-size: 0.68rem; color: #64748b;">${b.city || ''}</div>
                     </td>
-                    <td style="text-align: right; font-weight: 700; white-space: nowrap;">
+                    <td style="text-align: right; font-weight: 700; color: #0f172a; white-space: nowrap;">
                       ${b.bid_amount_str}
                     </td>
                     <td style="text-align: right; color: ${b.discount_percentage >= 0 ? 'var(--success-emerald)' : 'var(--danger-rose)'}; font-weight: 600;">
@@ -792,8 +798,8 @@ function renderUpcomingTenders() {
         <span class="meta-chip city"><i class="ri-map-pin-line"></i> ${t.city}</span>
         <span class="meta-chip ${typeClass}">${t.tender_type}</span>
         ${t.e_tender ? '<span class="meta-chip e-tender"><i class="ri-shield-check-line"></i> e-Teklif</span>' : ''}
-        <span class="meta-chip" style="background: rgba(255,255,255,0.06); color: var(--text-muted);">
-          <i class="ri-file-download-line"></i> ${t.interested_companies_count || 6} Firma İlgileniyor
+        <span class="meta-chip" style="background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0;">
+          <i class="ri-file-download-line" style="color: #2563eb;"></i> ${t.interested_companies_count || 6} Firma İlgileniyor
         </span>
       </div>
 
@@ -969,16 +975,16 @@ function openWinnerDetail(winner) {
   let biddersRows = '';
   if (winner.bidders && winner.bidders.length > 0) {
     biddersRows = winner.bidders.map(b => `
-      <tr style="border-bottom: 1px solid rgba(255,255,255,0.06);">
-        <td style="padding: 8px 4px; font-weight: 700;">#${b.rank}</td>
-        <td style="padding: 8px 4px;">
-          <div style="font-weight: 700; color: #fff;">${b.company_name}</div>
-          <div style="font-size: 0.68rem; color: var(--text-muted);">${b.city || ''} • ${b.notes || ''}</div>
+      <tr style="border-bottom: 1px solid #f1f5f9; ${b.status === 'winner' ? 'background: #f0fdf4;' : b.status === 'second' ? 'background: #eff6ff;' : ''}">
+        <td style="padding: 9px 8px; font-weight: 700; color: #0f172a;">#${b.rank}</td>
+        <td style="padding: 9px 8px;">
+          <div style="font-weight: 700; color: #0f172a;">${b.company_name}</div>
+          <div style="font-size: 0.68rem; color: #64748b;">${b.city || ''} ${b.notes ? '• ' + b.notes : ''}</div>
         </td>
-        <td style="padding: 8px 4px; text-align: right; font-weight: 700; color: ${b.status === 'winner' ? 'var(--success-emerald)' : '#fff'};">
+        <td style="padding: 9px 8px; text-align: right; font-weight: 700; color: ${b.status === 'winner' ? '#059669' : '#0f172a'}; white-space: nowrap;">
           ${b.bid_amount_str}
         </td>
-        <td style="padding: 8px 4px; text-align: right; color: var(--primary); font-weight: 600;">
+        <td style="padding: 9px 8px; text-align: right; color: #2563eb; font-weight: 700;">
           %${b.discount_percentage}
         </td>
       </tr>
@@ -989,11 +995,11 @@ function openWinnerDetail(winner) {
     <h2 class="sheet-title">${winner.title}</h2>
     <div class="sheet-authority"><i class="ri-government-line"></i> ${winner.authority}</div>
 
-    <div style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.4); padding: 12px; border-radius: var(--radius-md); margin-bottom: 14px;">
-      <span class="detail-item-lbl" style="color: var(--success-emerald); font-weight: 800;">🏆 İHALEYİ KAZANAN FİRMA (YÜKLENİCİ)</span>
-      <div style="font-size: 1.15rem; font-weight: 800; color: #fff; margin-top: 4px;">${winner.winner_company}</div>
-      <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 2px;">
-        VKN: <strong>${winner.winner_tax_id}</strong> • Merkez: <strong>${winner.winner_city}</strong> • Kırım: <strong>%${winner.discount_percentage}</strong>
+    <div style="background: #f0fdf4; border: 1px solid #86efac; padding: 14px; border-radius: var(--radius-md); margin-bottom: 14px;">
+      <span class="detail-item-lbl" style="color: #166534; font-weight: 800;">🏆 İHALEYİ KAZANAN FİRMA (YÜKLENİCİ)</span>
+      <div style="font-size: 1.15rem; font-weight: 800; color: #064e3b; margin-top: 4px;">${winner.winner_company}</div>
+      <div style="font-size: 0.75rem; color: #374151; margin-top: 2px;">
+        VKN: <strong style="color: #111827;">${winner.winner_tax_id}</strong> • Merkez: <strong style="color: #111827;">${winner.winner_city}</strong> • Kırım: <strong style="color: #15803d;">%${winner.discount_percentage}</strong>
       </div>
     </div>
 
@@ -1029,7 +1035,7 @@ function openWinnerDetail(winner) {
       </div>
       <div>
         <span class="detail-item-lbl">🏁 İş Bitim Tarihi</span>
-        <div class="detail-item-val" style="color: #38bdf8; font-weight: 700;">${winner.completion_date_str || '-'}</div>
+        <div class="detail-item-val" style="color: #0284c7; font-weight: 700;">${winner.completion_date_str || '-'}</div>
       </div>
       <div>
         <span class="detail-item-lbl">İşin Süresi</span>
@@ -1043,17 +1049,17 @@ function openWinnerDetail(winner) {
 
     <!-- Katılan Tüm Firmalar ve Teklif Cetveli -->
     <div style="margin-top: 16px;">
-      <h4 style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+      <h4 style="font-size: 0.85rem; font-weight: 700; color: #0f172a; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
         <i class="ri-file-list-3-line" style="color: var(--primary);"></i> Katılan Firmalar ve Teklif Cetveli (${winner.bid_count} İstekli)
       </h4>
-      <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); border-radius: var(--radius-sm); overflow-x: auto;">
+      <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: var(--radius-sm); overflow-x: auto; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
         <table style="width: 100%; border-collapse: collapse; font-size: 0.72rem;">
           <thead>
-            <tr style="background: rgba(255,255,255,0.06); color: var(--text-muted); text-align: left;">
-              <th style="padding: 6px 4px;">Sıra</th>
-              <th style="padding: 6px 4px;">Firma Adı</th>
-              <th style="padding: 6px 4px; text-align: right;">Teklif</th>
-              <th style="padding: 6px 4px; text-align: right;">Kırım</th>
+            <tr style="background: #f8fafc; color: #475569; font-weight: 700; border-bottom: 1px solid #e2e8f0; text-align: left;">
+              <th style="padding: 8px 8px;">Sıra</th>
+              <th style="padding: 8px 8px;">Firma Adı</th>
+              <th style="padding: 8px 8px; text-align: right;">Teklif</th>
+              <th style="padding: 8px 8px; text-align: right;">Kırım</th>
             </tr>
           </thead>
           <tbody>
@@ -1093,7 +1099,7 @@ function openTenderDetail(tender) {
       </div>
       <div>
         <span class="detail-item-lbl">⏱️ İhale Tarihi & Saati</span>
-        <div class="detail-item-val" style="color: #60a5fa; font-weight: 700;">${tender.tender_date_str || tender.formatted_date}</div>
+        <div class="detail-item-val" style="color: #1d4ed8; font-weight: 700;">${tender.tender_date_str || tender.formatted_date}</div>
       </div>
       <div>
         <span class="detail-item-lbl">⏳ Son Teklif Verme</span>

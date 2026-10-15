@@ -17,7 +17,7 @@
   <!-- Remix Icon -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css">
 
-  <link rel="stylesheet" href="/css/style.css?v=3">
+  <link rel="stylesheet" href="/css/style.css?v=4">
 </head>
 <body class="mobile-frame-active">
 
@@ -127,6 +127,20 @@
           </div>
         </div>
       </section>
+
+      <!-- Üst Hızlı Sekme Geçiş Çubuğu (Segment Control) -->
+      <div class="top-segment-bar">
+        <button class="segment-btn active" data-tab="tabWinners" onclick="switchTab('tabWinners')">
+          <i class="ri-trophy-line"></i> Sonuçlar
+        </button>
+        <button class="segment-btn" data-tab="tabUpcoming" onclick="switchTab('tabUpcoming')">
+          <i class="ri-timer-flash-line"></i> Yaklaşan İhaleler
+          <span class="segment-badge" id="topUpcomingCount">13</span>
+        </button>
+        <button class="segment-btn" data-tab="tabCompanies" onclick="switchTab('tabCompanies')">
+          <i class="ri-building-4-line"></i> Katılan Firmalar
+        </button>
+      </div>
 
       <!-- SEKMELER İÇERİK ALANI -->
       <div class="tab-content-viewport" id="tabContentArea">
@@ -310,6 +324,6 @@
     </main>
   </div>
 
-  <script src="/js/app.js?v=3"></script>
+  <script src="/js/app.js?v=4"></script>
 </body>
 </html>

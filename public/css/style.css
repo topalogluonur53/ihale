@@ -604,6 +604,63 @@ body:not(.mobile-frame-active) .app-container {
 }
 
 /* ============================================================
+   ÜST HIZLI SEKME GEÇİŞ ÇUBUĞU (SEGMENT CONTROL)
+   ============================================================ */
+.top-segment-bar {
+  display: flex;
+  background: #f1f5f9;
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  margin: 4px 16px 8px;
+  gap: 4px;
+  border: 1px solid #e2e8f0;
+}
+
+.segment-btn {
+  flex: 1;
+  background: transparent;
+  border: none;
+  padding: 8px 6px;
+  border-radius: 6px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.segment-btn:hover {
+  color: #1d4ed8;
+}
+
+.segment-btn.active {
+  background: #ffffff;
+  color: #2563eb;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+}
+
+.segment-badge {
+  background: #eff6ff;
+  color: #2563eb;
+  border: 1px solid #bfdbfe;
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 1px 6px;
+  border-radius: 10px;
+}
+
+.segment-btn.active .segment-badge {
+  background: #2563eb;
+  color: #ffffff;
+  border-color: #2563eb;
+}
+
+/* ============================================================
    SEKME İÇERİK ALANI VE KARTLAR
    ============================================================ */
 .tab-content-viewport {

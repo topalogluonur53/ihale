@@ -5,26 +5,45 @@ let winnersDb = [...winningCompanies];
 let lastSyncTime = new Date().toISOString();
 
 /**
- * Türkçe karakterleri ve sık yapılan yazım hatalarını normalize eder
+ * Türkçe karakterleri, büyük/küçük İ/I harflerini ve Unicode birleşik karakterlerini normalize eder
  */
 function normalizeQuery(str) {
   if (!str) return '';
-  let s = str.toLowerCase()
+  return String(str)
+    .replace(/İ/g, 'i')
+    .replace(/I/g, 'i')
     .replace(/ı/g, 'i')
+    .replace(/Ğ/g, 'g')
     .replace(/ğ/g, 'g')
+    .replace(/Ü/g, 'u')
     .replace(/ü/g, 'u')
+    .replace(/Ş/g, 's')
     .replace(/ş/g, 's')
+    .replace(/Ö/g, 'o')
     .replace(/ö/g, 'o')
+    .replace(/Ç/g, 'c')
     .replace(/ç/g, 'c')
+    .toLowerCase()
+    .replace(/\u0307/g, '') // Combining dot above
     .trim();
+}
 
-  // Akıllı Firma Takma Adı & Hata Düzeltmeleri
-  if (s.includes('peek') || s.includes('peak pv')) s = 'peak pv';
-  if (s.includes('girisim elerik') || s.includes('girisim elektrik') || s.includes('gesan')) s = 'girisim elektrik';
-  if (s.includes('europower enerjii') || s.includes('europower') || s.includes('eupwr')) s = 'europower';
-  if (s.includes('trafo') || s.includes('trafo merkezi')) s = 'trafo';
-
-  return s;
+/**
+ * Arama sorgusunu akıllı token'lara ayırır ve sektör kısaltmalarını genişletir
+ */
+function extractTokens(queryStr) {
+  const clean = normalizeQuery(queryStr);
+  const rawTokens = clean.split(/\s+/).filter(Boolean);
+  
+  return rawTokens.map(tok => {
+    if (tok === 'tm' || tok === 't.m.' || tok === 't.m' || tok === 'trafo' || tok === 'trafolar') return 'trafo';
+    if (tok === 'gesan' || tok === 'girisim' || tok === 'girisim elerik') return 'girisim';
+    if (tok === 'eupwr' || tok === 'europower' || tok === 'europower enerjii') return 'europower';
+    if (tok === 'peak' || tok === 'peek' || tok === 'peak pv' || tok === 'peek pv') return 'peak';
+    if (tok === 'teias' || tok === 'teiaş') return 'teias';
+    if (tok === 'tedas' || tok === 'tedaş') return 'tedas';
+    return tok;
+  });
 }
 
 /**
@@ -78,31 +97,23 @@ function getUpcomingTenders(query = {}) {
     };
   });
 
-  // Arama filtresi
+  // Akıllı Arama Filtresi (Çoklu kelime: TEİAŞ, TM, Girişim, Europower vb.)
   if (search && search.trim()) {
-    const rawS = search.trim().toLowerCase();
-    const normS = normalizeQuery(search);
+    const tokens = extractTokens(search);
 
     list = list.filter(t => {
-      const titleNorm = normalizeQuery(t.title);
-      const authNorm = normalizeQuery(t.authority);
-      const cityNorm = normalizeQuery(t.city);
-      const typeNorm = normalizeQuery(t.tender_type);
-      const iknMatch = t.ikn.toLowerCase().includes(rawS);
+      const fullText = normalizeQuery([
+        t.title,
+        t.authority,
+        t.authority_group,
+        t.city,
+        t.tender_type,
+        t.detail_summary,
+        t.ikn,
+        ...(t.interested_companies_list || [])
+      ].join(' '));
 
-      // İlgilenen firmalar arasında arama
-      const interestedMatch = t.interested_companies_list && t.interested_companies_list.some(comp => 
-        normalizeQuery(comp).includes(normS)
-      );
-
-      return (
-        titleNorm.includes(normS) ||
-        authNorm.includes(normS) ||
-        cityNorm.includes(normS) ||
-        typeNorm.includes(normS) ||
-        iknMatch ||
-        interestedMatch
-      );
+      return tokens.every(tok => fullText.includes(tok));
     });
   }
 
@@ -110,8 +121,8 @@ function getUpcomingTenders(query = {}) {
   if (category === 'trafo') {
     list = list.filter(t => 
       t.category_tag === 'trafo' || 
-      t.title.toLowerCase().includes('trafo') || 
-      t.tender_type.toLowerCase().includes('trafo')
+      normalizeQuery(t.title).includes('trafo') || 
+      normalizeQuery(t.tender_type).includes('trafo')
     );
   }
 
@@ -120,25 +131,25 @@ function getUpcomingTenders(query = {}) {
   }
 
   if (type && type !== 'all') {
-    list = list.filter(t => t.tender_type.toLowerCase().includes(type.toLowerCase()));
+    list = list.filter(t => normalizeQuery(t.tender_type).includes(normalizeQuery(type)));
   }
 
   if (group && group !== 'all') {
-    list = list.filter(t => t.authority_group && t.authority_group.toLowerCase().includes(group.toLowerCase()));
+    list = list.filter(t => t.authority_group && normalizeQuery(t.authority_group).includes(normalizeQuery(group)));
   }
 
   // Gelecek İhaleler Zaman Aralığı Filtresi (Varsayılan: Gelecek 3 Ay)
   const { timeframe = '3months' } = query;
   if (timeframe && timeframe !== 'all') {
     if (timeframe === '3months') {
-      const threeMonthsAhead = new Date(now.getTime() + 95 * 24 * 60 * 60 * 1000);
-      list = list.filter(t => new Date(t.tender_date) <= threeMonthsAhead && new Date(t.tender_date) >= now);
+      const threeMonthsAhead = new Date(now.getTime() + 105 * 24 * 60 * 60 * 1000);
+      list = list.filter(t => new Date(t.tender_date) <= threeMonthsAhead || t.diff_ms >= 0);
     } else if (timeframe === '1month') {
-      const oneMonthAhead = new Date(now.getTime() + 31 * 24 * 60 * 60 * 1000);
-      list = list.filter(t => new Date(t.tender_date) <= oneMonthAhead && new Date(t.tender_date) >= now);
+      const oneMonthAhead = new Date(now.getTime() + 35 * 24 * 60 * 60 * 1000);
+      list = list.filter(t => new Date(t.tender_date) <= oneMonthAhead);
     } else if (timeframe === '2weeks') {
-      const twoWeeksAhead = new Date(now.getTime() + 15 * 24 * 60 * 60 * 1000);
-      list = list.filter(t => new Date(t.tender_date) <= twoWeeksAhead && new Date(t.tender_date) >= now);
+      const twoWeeksAhead = new Date(now.getTime() + 18 * 24 * 60 * 60 * 1000);
+      list = list.filter(t => new Date(t.tender_date) <= twoWeeksAhead);
     }
   }
 
@@ -164,42 +175,36 @@ function getWinningCompanies(query = {}) {
   // Geçmiş İhaleler Zaman Aralığı Filtresi (Varsayılan: Son 1 Yıl)
   if (timeframe && timeframe !== 'all') {
     if (timeframe === '1year') {
-      const oneYearAgo = new Date(now.getTime() - 366 * 24 * 60 * 60 * 1000);
+      const oneYearAgo = new Date(now.getTime() - 370 * 24 * 60 * 60 * 1000);
       list = list.filter(w => new Date(w.contract_date || w.tender_date) >= oneYearAgo);
     } else if (timeframe === '6months') {
-      const sixMonthsAgo = new Date(now.getTime() - 180 * 24 * 60 * 60 * 1000);
+      const sixMonthsAgo = new Date(now.getTime() - 185 * 24 * 60 * 60 * 1000);
       list = list.filter(w => new Date(w.contract_date || w.tender_date) >= sixMonthsAgo);
     } else if (timeframe === '3months') {
-      const threeMonthsAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+      const threeMonthsAgo = new Date(now.getTime() - 95 * 24 * 60 * 60 * 1000);
       list = list.filter(w => new Date(w.contract_date || w.tender_date) >= threeMonthsAgo);
     }
   }
 
-  // Arama filtresi: Girişim Elektrik, Europower, Peak PV, vb.
+  // Akıllı Arama Filtresi (Girişim, Europower, Peak PV, TEİAŞ, TM vb.)
   if (search && search.trim()) {
-    const rawS = search.trim().toLowerCase();
-    const normS = normalizeQuery(search);
+    const tokens = extractTokens(search);
 
     list = list.filter(w => {
-      const titleNorm = normalizeQuery(w.title);
-      const authNorm = normalizeQuery(w.authority);
-      const winnerNorm = normalizeQuery(w.winner_company);
-      const cityNorm = normalizeQuery(w.city);
-      const iknMatch = w.ikn.toLowerCase().includes(rawS);
+      const biddersText = (w.bidders || []).map(b => b.company_name + ' ' + (b.city || '')).join(' ');
+      const fullText = normalizeQuery([
+        w.title,
+        w.authority,
+        w.authority_group,
+        w.winner_company,
+        w.winner_city,
+        w.city,
+        w.tender_type,
+        w.ikn,
+        biddersText
+      ].join(' '));
 
-      // Katılan tüm firmalar arasında arama
-      const matchBidder = w.bidders && w.bidders.some(b => 
-        normalizeQuery(b.company_name).includes(normS)
-      );
-
-      return (
-        titleNorm.includes(normS) ||
-        authNorm.includes(normS) ||
-        winnerNorm.includes(normS) ||
-        cityNorm.includes(normS) ||
-        iknMatch ||
-        matchBidder
-      );
+      return tokens.every(tok => fullText.includes(tok));
     });
   }
 
