@@ -100,7 +100,8 @@ const REAL_ITM_TENDERS_FEED = [
       { rank: 2, company_name: "Europower Enerji ve Otomasyon A.Ş.", tax_id: "3810482914", city: "Ankara", bid_amount: 299800000, bid_amount_str: "299.800.000 ₺", discount_percentage: 6.46, status: "second", status_label: "🥈 2. Teklif", notes: "2. sırada yer aldı." },
       { rank: 3, company_name: "Astor Enerji A.Ş.", tax_id: "0910048291", city: "Ankara", bid_amount: 304500000, bid_amount_str: "304.500.000 ₺", discount_percentage: 4.99, status: "valid", status_label: "✅ Geçerli", notes: "3. sırada geçerli teklif." },
       { rank: 4, company_name: "YEO Teknoloji Enerji ve Endüstri A.Ş.", tax_id: "9480029314", city: "İstanbul", bid_amount: 311000000, bid_amount_str: "311.000.000 ₺", discount_percentage: 2.96, status: "valid", status_label: "✅ Geçerli", notes: "4. sırada geçerli teklif." },
-      { rank: 5, company_name: "ABB Elektrik Sanayi A.Ş.", tax_id: "0010029314", city: "İstanbul", bid_amount: 318000000, bid_amount_str: "318.000.000 ₺", discount_percentage: 0.78, status: "valid", status_label: "✅ Geçerli", notes: "Geçerli teklif." }
+      { rank: 5, company_name: "ABB Elektrik Sanayi A.Ş.", tax_id: "0010029314", city: "İstanbul", bid_amount: 318000000, bid_amount_str: "318.000.000 ₺", discount_percentage: 0.78, status: "valid", status_label: "✅ Geçerli", notes: "Geçerli teklif." },
+      { rank: 6, company_name: "Best Elektromekanik Sanayi Tesisleri A.Ş.", tax_id: "1650019284", city: "Balıkesir", bid_amount: 265000000, bid_amount_str: "265.000.000 ₺", discount_percentage: 17.32, status: "below_threshold", status_label: "⚠️ Sınır Altı", notes: "Aşırı düşük sınırının altında kaldı." }
     ]
   },
 
@@ -141,7 +142,9 @@ const REAL_ITM_TENDERS_FEED = [
     bidders: [
       { rank: 1, company_name: "Peak PV Solar & Girişim Elektrik İş Ortaklığı", tax_id: "7250918241", city: "Ankara", bid_amount: 331321067, bid_amount_str: "331.321.067 ₺", discount_percentage: 9.23, status: "winner", status_label: "🏆 1. Kazandı (Yüklenici)", notes: "331.321.067 TL sözleşme imzalandı." },
       { rank: 2, company_name: "Astor Enerji A.Ş.", tax_id: "0910048291", city: "Ankara", bid_amount: 342500000, bid_amount_str: "342.500.000 ₺", discount_percentage: 6.16, status: "second", status_label: "🥈 2. Teklif", notes: "2. sırada yer aldı." },
-      { rank: 3, company_name: "Kontrolmatik Teknoloji A.Ş.", tax_id: "5770512841", city: "İstanbul", bid_amount: 349000000, bid_amount_str: "349.000.000 ₺", discount_percentage: 4.38, status: "valid", status_label: "✅ Geçerli", notes: "Geçerli teklif." }
+      { rank: 3, company_name: "Kontrolmatik Teknoloji A.Ş.", tax_id: "5770512841", city: "İstanbul", bid_amount: 349000000, bid_amount_str: "349.000.000 ₺", discount_percentage: 4.38, status: "valid", status_label: "✅ Geçerli", notes: "Geçerli teklif." },
+      { rank: 4, company_name: "Siemens Sanayi ve Ticaret A.Ş.", tax_id: "7700052314", city: "İstanbul", bid_amount: 355000000, bid_amount_str: "355.000.000 ₺", discount_percentage: 2.74, status: "valid", status_label: "✅ Geçerli", notes: "Geçerli teklif." },
+      { rank: 5, company_name: "Best Elektromekanik Sanayi Tesisleri A.Ş.", tax_id: "1650019284", city: "Balıkesir", bid_amount: 295000000, bid_amount_str: "295.000.000 ₺", discount_percentage: 19.18, status: "below_threshold", status_label: "⚠️ Sınır Altı", notes: "Sınır değerin altında kalarak elendi." }
     ]
   },
 
@@ -182,7 +185,9 @@ const REAL_ITM_TENDERS_FEED = [
     bidders: [
       { rank: 1, company_name: "Kontrolmatik Teknoloji Enerji ve Mühendislik A.Ş.", tax_id: "5770512841", city: "İstanbul", bid_amount: 386400000, bid_amount_str: "386.400.000 ₺", discount_percentage: 6.89, status: "winner", status_label: "🏆 1. Kazandı (Yüklenici)", notes: "154 kV GIS şalt ve SCADA otomasyonu kapsamında sözleşme imzalandı." },
       { rank: 2, company_name: "Girişim Elektrik Sanayi Taahhüt A.Ş.", tax_id: "3960074521", city: "Ankara", bid_amount: 394200000, bid_amount_str: "394.200.000 ₺", discount_percentage: 5.01, status: "second", status_label: "🥈 2. Teklif", notes: "2. sırada yer aldı." },
-      { rank: 3, company_name: "Siemens Sanayi ve Ticaret A.Ş.", tax_id: "7700052314", city: "İstanbul", bid_amount: 405000000, bid_amount_str: "405.000.000 ₺", discount_percentage: 2.41, status: "valid", status_label: "✅ Geçerli", notes: "Geçerli teklif." }
+      { rank: 3, company_name: "Siemens Sanayi ve Ticaret A.Ş.", tax_id: "7700052314", city: "İstanbul", bid_amount: 405000000, bid_amount_str: "405.000.000 ₺", discount_percentage: 2.41, status: "valid", status_label: "✅ Geçerli", notes: "Geçerli teklif." },
+      { rank: 4, company_name: "Astor Enerji A.Ş.", tax_id: "0910048291", city: "Ankara", bid_amount: 410000000, bid_amount_str: "410.000.000 ₺", discount_percentage: 1.20, status: "valid", status_label: "✅ Geçerli", notes: "Geçerli teklif." },
+      { rank: 5, company_name: "ABB Elektrik Sanayi A.Ş.", tax_id: "0010029314", city: "İstanbul", bid_amount: 414000000, bid_amount_str: "414.000.000 ₺", discount_percentage: 0.24, status: "valid", status_label: "✅ Geçerli", notes: "Geçerli teklif." }
     ]
   },
 
@@ -223,7 +228,9 @@ const REAL_ITM_TENDERS_FEED = [
     bidders: [
       { rank: 1, company_name: "BETAŞ Transformatör & İnşaat Taahhüt A.Ş.", tax_id: "1660381920", city: "Adana", bid_amount: 422400000, bid_amount_str: "422.400.000 ₺", discount_percentage: 1.90, status: "winner", status_label: "🏆 1. Kazandı (Yüklenici)", notes: "422.400.000 TL sözleşme imzalandı." },
       { rank: 2, company_name: "Europower Enerji A.Ş.", tax_id: "3810482914", city: "Ankara", bid_amount: 425100000, bid_amount_str: "425.100.000 ₺", discount_percentage: 1.27, status: "second", status_label: "🥈 2. Teklif", notes: "2. en avantajlı teklif." },
-      { rank: 3, company_name: "Astor Enerji A.Ş.", tax_id: "0910048291", city: "Ankara", bid_amount: 427800000, bid_amount_str: "427.800.000 ₺", discount_percentage: 0.64, status: "valid", status_label: "✅ Geçerli", notes: "Geçerli teklif." }
+      { rank: 3, company_name: "Astor Enerji A.Ş.", tax_id: "0910048291", city: "Ankara", bid_amount: 427800000, bid_amount_str: "427.800.000 ₺", discount_percentage: 0.64, status: "valid", status_label: "✅ Geçerli", notes: "Geçerli teklif." },
+      { rank: 4, company_name: "Girişim Elektrik Sanayi Taahhüt A.Ş.", tax_id: "3960074521", city: "Ankara", bid_amount: 428900000, bid_amount_str: "428.900.000 ₺", discount_percentage: 0.39, status: "valid", status_label: "✅ Geçerli", notes: "Geçerli teklif." },
+      { rank: 5, company_name: "Schneider Elektrik Sanayi ve Ticaret A.Ş.", tax_id: "7580019284", city: "İstanbul", bid_amount: 430000000, bid_amount_str: "430.000.000 ₺", discount_percentage: 0.13, status: "valid", status_label: "✅ Geçerli", notes: "Geçerli teklif." }
     ]
   },
 
@@ -263,7 +270,10 @@ const REAL_ITM_TENDERS_FEED = [
     source_channel: "TEİAŞ & EKAP Sonuç Bülteni",
     bidders: [
       { rank: 1, company_name: "ZRD Mühendislik & Elektrik İnşaat A.Ş.", tax_id: "9980018241", city: "Ankara", bid_amount: 312356462, bid_amount_str: "312.356.462 ₺", discount_percentage: 9.46, status: "winner", status_label: "🏆 1. Kazandı", notes: "312.356.462 TL sözleşme imzalandı." },
-      { rank: 2, company_name: "Girişim Elektrik A.Ş.", tax_id: "3960074521", city: "Ankara", bid_amount: 319500000, bid_amount_str: "319.500.000 ₺", discount_percentage: 7.39, status: "second", status_label: "🥈 2. Teklif", notes: "2. sırada yer aldı." }
+      { rank: 2, company_name: "Girişim Elektrik A.Ş.", tax_id: "3960074521", city: "Ankara", bid_amount: 319500000, bid_amount_str: "319.500.000 ₺", discount_percentage: 7.39, status: "second", status_label: "🥈 2. Teklif", notes: "2. sırada yer aldı." },
+      { rank: 3, company_name: "Astor Enerji A.Ş.", tax_id: "0910048291", city: "Ankara", bid_amount: 324000000, bid_amount_str: "324.000.000 ₺", discount_percentage: 6.09, status: "valid", status_label: "✅ Geçerli", notes: "3. sırada yer aldı." },
+      { rank: 4, company_name: "Kontrolmatik Teknoloji A.Ş.", tax_id: "5770512841", city: "İstanbul", bid_amount: 331000000, bid_amount_str: "331.000.000 ₺", discount_percentage: 4.06, status: "valid", status_label: "✅ Geçerli", notes: "4. sırada yer aldı." },
+      { rank: 5, company_name: "Siemens Sanayi ve Ticaret A.Ş.", tax_id: "7700052314", city: "İstanbul", bid_amount: 339000000, bid_amount_str: "339.000.000 ₺", discount_percentage: 1.74, status: "valid", status_label: "✅ Geçerli", notes: "Geçerli teklif." }
     ]
   },
 
@@ -303,7 +313,10 @@ const REAL_ITM_TENDERS_FEED = [
     source_channel: "TEİAŞ & KAP Bildirimi",
     bidders: [
       { rank: 1, company_name: "Astor Enerji A.Ş.", tax_id: "0910048291", city: "Ankara", bid_amount: 278900000, bid_amount_str: "278.900.000 ₺", discount_percentage: 10.03, status: "winner", status_label: "🏆 1. Kazandı", notes: "278.900.000 TL sözleşme imzalandı." },
-      { rank: 2, company_name: "Girişim Elektrik A.Ş.", tax_id: "3960074521", city: "Ankara", bid_amount: 284500000, bid_amount_str: "284.500.000 ₺", discount_percentage: 8.23, status: "second", status_label: "🥈 2. Teklif", notes: "2. sırada yer aldı." }
+      { rank: 2, company_name: "Girişim Elektrik A.Ş.", tax_id: "3960074521", city: "Ankara", bid_amount: 284500000, bid_amount_str: "284.500.000 ₺", discount_percentage: 8.23, status: "second", status_label: "🥈 2. Teklif", notes: "2. sırada yer aldı." },
+      { rank: 3, company_name: "Kontrolmatik Teknoloji Enerji ve Mühendislik A.Ş.", tax_id: "5770512841", city: "İstanbul", bid_amount: 289500000, bid_amount_str: "289.500.000 ₺", discount_percentage: 6.61, status: "valid", status_label: "✅ Geçerli", notes: "3. sırada yer aldı." },
+      { rank: 4, company_name: "Europower Enerji ve Otomasyon A.Ş.", tax_id: "3810482914", city: "Ankara", bid_amount: 294000000, bid_amount_str: "294.000.000 ₺", discount_percentage: 5.16, status: "valid", status_label: "✅ Geçerli", notes: "4. sırada yer aldı." },
+      { rank: 5, company_name: "Best Elektromekanik Sanayi Tesisleri A.Ş.", tax_id: "1650019284", city: "Balıkesir", bid_amount: 299000000, bid_amount_str: "299.000.000 ₺", discount_percentage: 3.55, status: "valid", status_label: "✅ Geçerli", notes: "Geçerli teklif." }
     ]
   },
 
@@ -343,7 +356,9 @@ const REAL_ITM_TENDERS_FEED = [
     source_channel: "TEİAŞ & KAP Bildirimi",
     bidders: [
       { rank: 1, company_name: "Europower Enerji A.Ş.", tax_id: "3810482914", city: "Ankara", bid_amount: 247500000, bid_amount_str: "247.500.000 ₺", discount_percentage: 10.00, status: "winner", status_label: "🏆 1. Kazandı", notes: "247.500.000 TL ile ihale kazanıldı." },
-      { rank: 2, company_name: "Astor Enerji A.Ş.", tax_id: "0910048291", city: "Ankara", bid_amount: 254000000, bid_amount_str: "254.000.000 ₺", discount_percentage: 7.64, status: "second", status_label: "🥈 2. Teklif", notes: "2. sırada yer aldı." }
+      { rank: 2, company_name: "Astor Enerji A.Ş.", tax_id: "0910048291", city: "Ankara", bid_amount: 254000000, bid_amount_str: "254.000.000 ₺", discount_percentage: 7.64, status: "second", status_label: "🥈 2. Teklif", notes: "2. sırada yer aldı." },
+      { rank: 3, company_name: "Girişim Elektrik Sanayi Taahhüt ve Tic. A.Ş.", tax_id: "3960074521", city: "Ankara", bid_amount: 258000000, bid_amount_str: "258.000.000 ₺", discount_percentage: 6.18, status: "valid", status_label: "✅ Geçerli", notes: "3. sırada yer aldı." },
+      { rank: 4, company_name: "Siemens Sanayi ve Ticaret A.Ş.", tax_id: "7700052314", city: "İstanbul", bid_amount: 264000000, bid_amount_str: "264.000.000 ₺", discount_percentage: 4.00, status: "valid", status_label: "✅ Geçerli", notes: "Geçerli teklif." }
     ]
   },
 
@@ -382,8 +397,11 @@ const REAL_ITM_TENDERS_FEED = [
     category_tag: "trafo",
     source_channel: "TEİAŞ & KAP Bildirimi",
     bidders: [
-      { rank: 1, company_name: "Girişim Elektrik A.Ş. & Kontrolmatik Teknoloji Konsorsiyumu", tax_id: "3960074521", city: "Ankara", bid_amount: 118500000, bid_amount_str: "1.185.000.000 ₺", discount_percentage: 10.90, status: "winner", status_label: "🏆 1. Kazandı", notes: "400 kV yüksek gerilim oto-trafo ve GIS tesisatında Türkiye'nin en büyük trafo merkezi sözleşmesi." },
-      { rank: 2, company_name: "Siemens Sanayi A.Ş.", tax_id: "7700052314", city: "İstanbul", bid_amount: 1240000000, bid_amount_str: "1.240.000.000 ₺", discount_percentage: 6.77, status: "second", status_label: "🥈 2. Teklif", notes: "2. teklif sahibi." }
+      { rank: 1, company_name: "Girişim Elektrik A.Ş. & Kontrolmatik Teknoloji Konsorsiyumu", tax_id: "3960074521", city: "Ankara", bid_amount: 1185000000, bid_amount_str: "1.185.000.000 ₺", discount_percentage: 10.90, status: "winner", status_label: "🏆 1. Kazandı", notes: "400 kV yüksek gerilim oto-trafo ve GIS tesisatında Türkiye'nin en büyük trafo merkezi sözleşmesi." },
+      { rank: 2, company_name: "Siemens Sanayi A.Ş.", tax_id: "7700052314", city: "İstanbul", bid_amount: 1240000000, bid_amount_str: "1.240.000.000 ₺", discount_percentage: 6.77, status: "second", status_label: "🥈 2. Teklif", notes: "2. teklif sahibi." },
+      { rank: 3, company_name: "Astor Enerji A.Ş.", tax_id: "0910048291", city: "Ankara", bid_amount: 1265000000, bid_amount_str: "1.265.000.000 ₺", discount_percentage: 4.89, status: "valid", status_label: "✅ Geçerli", notes: "3. sırada yer aldı." },
+      { rank: 4, company_name: "Best Elektromekanik Sanayi Tesisleri A.Ş.", tax_id: "1650019284", city: "Balıkesir", bid_amount: 1290000000, bid_amount_str: "1.290.000.000 ₺", discount_percentage: 3.01, status: "valid", status_label: "✅ Geçerli", notes: "4. sırada yer aldı." },
+      { rank: 5, company_name: "Europower Enerji ve Otomasyon A.Ş.", tax_id: "3810482914", city: "Ankara", bid_amount: 1310000000, bid_amount_str: "1.310.000.000 ₺", discount_percentage: 1.50, status: "valid", status_label: "✅ Geçerli", notes: "Geçerli teklif." }
     ]
   }
 ];

@@ -18,6 +18,12 @@ const AppState = {
   allCompanies: [],
   analyticsData: null,
   favorites: JSON.parse(localStorage.getItem('kik_ihale_favorites') || '[]'),
+  trackedCompanies: JSON.parse(localStorage.getItem('kik_tracked_companies') || 'null') || [
+    "Girişim Elektrik Sanayi Taahhüt ve Ticaret A.Ş. (GESAN)",
+    "Europower Enerji ve Otomasyon Teknolojileri A.Ş. (EUPWR)",
+    "Astor Enerji A.Ş. (ASTOR)"
+  ],
+  companyViewMode: 'tracked', // 'tracked' | 'directory'
   cities: [],
   isSyncing: false,
   theme: localStorage.getItem('kik_theme') || 'light',
@@ -74,6 +80,7 @@ const DOM = {
   upcomingCardsList: document.getElementById('upcomingCardsList'),
   winnerCardsList: document.getElementById('winnerCardsList'),
   companiesCardsList: document.getElementById('companiesCardsList'),
+  trackedCompaniesList: document.getElementById('trackedCompaniesList'),
   analyticsContainer: document.getElementById('analyticsContainer'),
   favoritesCardsList: document.getElementById('favoritesCardsList'),
   upcomingBadgeCount: document.getElementById('upcomingBadgeCount'),
@@ -84,6 +91,16 @@ const DOM = {
   btnToggleAllWinners: document.getElementById('btnToggleAllWinners'),
   btnToggleAllUpcoming: document.getElementById('btnToggleAllUpcoming'),
   btnToggleAllCompanies: document.getElementById('btnToggleAllCompanies'),
+
+  // Firma Takip Portföyü Kontrolleri
+  btnViewTrackedCompanies: document.getElementById('btnViewTrackedCompanies'),
+  btnViewAllCompanies: document.getElementById('btnViewAllCompanies'),
+  trackedCompaniesCountPill: document.getElementById('trackedCompaniesCountPill'),
+  allCompaniesCountPill: document.getElementById('allCompaniesCountPill'),
+  inputTrackCompany: document.getElementById('inputTrackCompany'),
+  trackedCompaniesDatalist: document.getElementById('trackedCompaniesDatalist'),
+  btnAddCompanyAction: document.getElementById('btnAddCompanyAction'),
+  quickAddChipsContainer: document.getElementById('quickAddChipsContainer'),
 
   // Detay Modalı (Genişletilebilir Kayar Pencere)
   detailOverlay: document.getElementById('detailModalOverlay'),
@@ -282,6 +299,50 @@ function setupEventListeners() {
   if (DOM.btnToggleAllCompanies) {
     DOM.btnToggleAllCompanies.addEventListener('click', () => toggleAllCardsInContainer(DOM.companiesCardsList));
   }
+
+  // Firma Takip Portföyü Görünüm Butonları
+  if (DOM.btnViewTrackedCompanies) {
+    DOM.btnViewTrackedCompanies.addEventListener('click', () => {
+      AppState.companyViewMode = 'tracked';
+      updateCompanyViewModeUI();
+      renderTrackedCompanies();
+    });
+  }
+
+  if (DOM.btnViewAllCompanies) {
+    DOM.btnViewAllCompanies.addEventListener('click', () => {
+      AppState.companyViewMode = 'directory';
+      updateCompanyViewModeUI();
+      renderCompaniesIndex();
+    });
+  }
+
+  // Firma Ekle Butonu ve Enter Tuşu
+  if (DOM.btnAddCompanyAction) {
+    DOM.btnAddCompanyAction.addEventListener('click', () => {
+      if (DOM.inputTrackCompany) {
+        addTrackedCompany(DOM.inputTrackCompany.value);
+      }
+    });
+  }
+
+  if (DOM.inputTrackCompany) {
+    DOM.inputTrackCompany.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        addTrackedCompany(DOM.inputTrackCompany.value);
+      }
+    });
+  }
+
+  // Hızlı Firma Ekleme Çipleri
+  const quickFirms = document.querySelectorAll('.quick-chip-btn');
+  quickFirms.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const companyName = btn.dataset.name;
+      addTrackedCompany(companyName);
+    });
+  });
 }
 
 /**
@@ -684,9 +745,23 @@ function renderWinningCompanies() {
           </div>
         </div>
 
+        <!-- Katılan Tüm İstekliler Hızlı Şeridi -->
+        ${w.bidders && w.bidders.length > 0 ? `
+          <div class="card-bidders-quick-strip">
+            <div class="quick-strip-title"><i class="ri-team-line"></i> Katılan Tüm İstekliler (${w.bidders.length} İstekli):</div>
+            <div class="bidders-chips-row">
+              ${w.bidders.map(b => `
+                <span class="bidder-chip ${b.status === 'winner' ? 'winner' : b.status === 'second' ? 'second' : ''}" title="${b.company_name} - ${b.bid_amount_str} (%${b.discount_percentage} Kırım)">
+                  ${b.rank === 1 ? '🏆 1.' : b.rank === 2 ? '🥈 2.' : '#' + b.rank} ${b.company_name.split(' ')[0]} ${b.company_name.split(' ')[1] || ''} (%${b.discount_percentage})
+                </span>
+              `).join('')}
+            </div>
+          </div>
+        ` : ''}
+
         <!-- Katılan Firmaları Göster/Gizle Butonu -->
         <button class="toggle-bidders-btn" data-target="biddersTable_${w.id}">
-          <span><i class="ri-group-line"></i> Katılan Firmalar ve Teklif Cetveli (${w.bid_count} İstekli)</span>
+          <span><i class="ri-file-list-3-line"></i> Katılan Firmalar ve Teklif Cetveli (${w.bid_count} İstekli)</span>
           <i class="ri-arrow-down-s-line"></i>
         </button>
 
@@ -748,10 +823,293 @@ function renderWinningCompanies() {
 }
 
 /**
- * Katılan Tüm Firmalar Dizinini Render Eder (Firma Profili Sekmesi)
+ * Takip Edilen Firmaları LocalStorage'a Kaydeder
+ */
+function saveTrackedCompanies() {
+  localStorage.setItem('kik_tracked_companies', JSON.stringify(AppState.trackedCompanies));
+  if (DOM.trackedCompaniesCountPill) {
+    DOM.trackedCompaniesCountPill.textContent = AppState.trackedCompanies.length;
+  }
+}
+
+/**
+ * Takip Listesine Yeni Firma Ekleme
+ */
+function addTrackedCompany(companyName) {
+  if (!companyName || !companyName.trim()) {
+    showToast('Lütfen geçerli bir firma adı yazın');
+    return;
+  }
+  const clean = companyName.trim();
+  // allCompanies içinde akıllı arama
+  let matched = AppState.allCompanies.find(c => 
+    c.name.toLowerCase() === clean.toLowerCase() ||
+    c.name.toLowerCase().includes(clean.toLowerCase())
+  );
+  const targetName = matched ? matched.name : clean;
+  if (AppState.trackedCompanies.includes(targetName)) {
+    showToast(`${targetName} zaten takip listenizde ekli ⭐`);
+    return;
+  }
+  AppState.trackedCompanies.unshift(targetName);
+  saveTrackedCompanies();
+  if (DOM.inputTrackCompany) DOM.inputTrackCompany.value = '';
+  AppState.companyViewMode = 'tracked';
+  updateCompanyViewModeUI();
+  renderTrackedCompanies();
+  showToast(`${targetName} takip listenize eklendi 🎯`);
+}
+
+/**
+ * Takip Listesinden Firma Çıkarma
+ */
+function removeTrackedCompany(companyName) {
+  AppState.trackedCompanies = AppState.trackedCompanies.filter(n => n !== companyName);
+  saveTrackedCompanies();
+  renderTrackedCompanies();
+  showToast(`${companyName} listeden kaldırıldı`);
+}
+
+/**
+ * Firma Datalist Otomatik Tamamlayıcıyı Doldurur
+ */
+function populateCompaniesDatalist() {
+  if (!DOM.trackedCompaniesDatalist || !AppState.allCompanies) return;
+  DOM.trackedCompaniesDatalist.innerHTML = AppState.allCompanies.map(c => 
+    `<option value="${c.name}"></option>`
+  ).join('');
+}
+
+/**
+ * Firma Sekmesi Görünüm Modu Arayüzünü Günceller (Takip / Dizin)
+ */
+function updateCompanyViewModeUI() {
+  const isTracked = AppState.companyViewMode === 'tracked';
+  if (DOM.btnViewTrackedCompanies) DOM.btnViewTrackedCompanies.classList.toggle('active', isTracked);
+  if (DOM.btnViewAllCompanies) DOM.btnViewAllCompanies.classList.toggle('active', !isTracked);
+  if (DOM.trackedCompaniesList) DOM.trackedCompaniesList.style.display = isTracked ? 'flex' : 'none';
+  if (DOM.companiesCardsList) DOM.companiesCardsList.style.display = isTracked ? 'none' : 'flex';
+  if (DOM.trackedCompaniesCountPill) DOM.trackedCompaniesCountPill.textContent = AppState.trackedCompanies.length;
+  if (DOM.allCompaniesCountPill) DOM.allCompaniesCountPill.textContent = AppState.allCompanies.length;
+}
+
+/**
+ * Takip Edilen Firmaların ve Aldığı İhalelerin Tek Liste Görünümünü Render Eder
+ */
+function renderTrackedCompanies() {
+  const container = DOM.trackedCompaniesList;
+  if (!container) return;
+  container.innerHTML = '';
+
+  if (AppState.trackedCompanies.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <i class="ri-user-star-line"></i>
+        <p>Takip listenizde henüz eklenmiş bir firma bulunmuyor.</p>
+        <p style="font-size: 0.75rem; margin-top: 6px;">Yukarıdaki kutudan firma adı yazarak veya hızlı ekleme butonlarına dokunarak dilediğiniz firmaları ekleyebilirsiniz.</p>
+      </div>
+    `;
+    return;
+  }
+
+  AppState.trackedCompanies.forEach(companyName => {
+    // allCompanies dizininde ara
+    let c = AppState.allCompanies.find(comp => 
+      comp.name.toLowerCase() === companyName.toLowerCase() ||
+      comp.name.toLowerCase().includes(companyName.toLowerCase()) ||
+      companyName.toLowerCase().includes(comp.name.toLowerCase())
+    );
+
+    // Dizin henüz yüklenmediyse winningCompanies üzerinden türet
+    if (!c) {
+      const wonTenders = AppState.winningCompanies.filter(w => 
+        w.winner_company.toLowerCase().includes(companyName.toLowerCase())
+      );
+      c = {
+        name: companyName,
+        city: wonTenders[0]?.winner_city || 'Kayıtlı',
+        tax_id: wonTenders[0]?.winner_tax_id || '',
+        won_count: wonTenders.length,
+        participated_count: wonTenders.length,
+        total_won_amount_str: wonTenders.length > 0 ? (wonTenders.reduce((sum, w) => sum + (w.contract_amount || 0), 0) / 1000000).toFixed(1) + ' Milyon ₺' : '0 ₺',
+        won_tenders: wonTenders,
+        tenders: wonTenders
+      };
+    }
+
+    const wonList = c.won_tenders || (c.tenders ? c.tenders.filter(t => t.is_winner) : []);
+    const otherList = c.tenders ? c.tenders.filter(t => !t.is_winner) : [];
+
+    const card = document.createElement('div');
+    card.className = 'tracked-company-card';
+
+    card.innerHTML = `
+      <div class="tracked-company-header">
+        <div style="flex: 1;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <div class="company-icon-circle" style="width: 32px; height: 32px; font-size: 0.95rem;">
+              <i class="ri-building-line"></i>
+            </div>
+            <div>
+              <h3 class="tracked-company-title">${c.name}</h3>
+              <div class="tracked-company-meta">
+                <span>VKN: ${c.tax_id || 'Kayıtlı'}</span> • <span>${c.city || 'Merkez'}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <button class="btn-remove-tracked" data-name="${companyName}" title="Bu firmayı takip listesinden çıkar">
+          <i class="ri-delete-bin-line"></i> Kaldır
+        </button>
+      </div>
+
+      <!-- Özet Metrikler -->
+      <div class="tracked-metrics-row">
+        <div class="tracked-metric-item">
+          <div class="tracked-metric-val" style="color: var(--success-emerald);">${c.won_count || wonList.length} İhale</div>
+          <div class="tracked-metric-lbl">Aldığı / Kazandığı</div>
+        </div>
+        <div class="tracked-metric-item">
+          <div class="tracked-metric-val" style="color: var(--primary);">${c.total_won_amount_str || '0 ₺'}</div>
+          <div class="tracked-metric-lbl">Toplam Sözleşme Hacmi</div>
+        </div>
+        <div class="tracked-metric-item">
+          <div class="tracked-metric-val" style="color: #64748b;">${c.participated_count || (wonList.length + otherList.length)} İhale</div>
+          <div class="tracked-metric-lbl">Toplam Katılımı</div>
+        </div>
+      </div>
+
+      <!-- FİRMANIN ALDIĞI İHALELER (TEK LİSTE) -->
+      <div class="won-tenders-group">
+        <div class="won-tenders-title">
+          <span><i class="ri-trophy-fill" style="color: #15803d;"></i> Aldığı İhaleler & Kazandığı Sözleşmeler (${wonList.length} İhale)</span>
+          <span style="font-size: 0.68rem; font-weight: 700; color: #166534;">Firma Adı Altında Tek Liste</span>
+        </div>
+
+        ${wonList.length === 0 ? `
+          <div style="background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 8px; padding: 12px; text-align: center; font-size: 0.75rem; color: #64748b; margin-bottom: 8px;">
+            <i class="ri-information-line"></i> Bu firmanın veritabanımızda henüz doğrudan kazandığı bir ihale kaydı bulunmuyor. Katıldığı diğer ihaleler aşağıda listelenmiştir.
+          </div>
+        ` : `
+          <div class="won-tenders-sublist">
+            ${wonList.map(t => `
+              <div class="won-tender-card">
+                <div class="won-tender-card-top">
+                  <span class="ikn-tag" style="font-size: 0.65rem;">İKN: ${t.ikn}</span>
+                  <span class="bid-status-pill winner" style="font-size: 0.62rem;">🏆 1. Kazandı (Yüklenici)</span>
+                </div>
+                <h4 class="won-tender-title">${t.title}</h4>
+                <div style="font-size: 0.7rem; color: #64748b;">
+                  <i class="ri-government-line"></i> ${t.authority || 'Kamu İdaresi'} • ${t.city || ''}
+                </div>
+                <div class="won-tender-subline">
+                  <div class="won-tender-prices">
+                    <span style="font-size: 0.65rem; color: #64748b;">Sözleşme Bedeli:</span>
+                    <span class="won-tender-price">${t.bid_str}</span>
+                    ${t.discount_percentage ? `<span style="font-size: 0.65rem; color: #15803d; font-weight: 700;">(%${t.discount_percentage} Kırım)</span>` : ''}
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 0.65rem; color: #64748b;">
+                      <i class="ri-calendar-line"></i> ${t.contract_date_str || t.tender_date_str || '-'}
+                    </span>
+                    <button class="btn-open-tender-detail" data-id="${t.id}" data-ikn="${t.ikn}">
+                      Detay <i class="ri-arrow-right-s-line"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `}
+      </div>
+
+      <!-- KATILDIĞI DİĞER İHALELER (EĞER VARSA) -->
+      ${otherList.length > 0 ? `
+        <div>
+          <button class="participated-tenders-toggle-btn" data-target="part_${(c.tax_id || c.name).replace(/[^a-zA-Z0-9]/g, '')}">
+            <span><i class="ri-file-list-line"></i> Katıldığı & Teklif Verdiği Diğer İhaleler (${otherList.length} İhale)</span>
+            <i class="ri-arrow-down-s-line"></i>
+          </button>
+          <div class="participated-tenders-list" id="part_${(c.tax_id || c.name).replace(/[^a-zA-Z0-9]/g, '')}">
+            ${otherList.map(t => `
+              <div class="won-tender-card" style="border-left: 3px solid #94a3b8; background: #ffffff;">
+                <div class="won-tender-card-top">
+                  <span class="ikn-tag" style="font-size: 0.65rem;">İKN: ${t.ikn}</span>
+                  <span class="bid-status-pill second" style="font-size: 0.62rem;">${t.status_label || `#${t.rank} Teklif`}</span>
+                </div>
+                <h4 class="won-tender-title" style="font-size: 0.76rem;">${t.title}</h4>
+                <div class="won-tender-subline">
+                  <div>
+                    <span style="font-size: 0.65rem; color: #64748b;">Teklifi:</span>
+                    <strong style="color: #1e293b;">${t.bid_str}</strong>
+                    ${t.discount_percentage ? `<span style="color: #2563eb; font-size: 0.65rem;">(%${t.discount_percentage})</span>` : ''}
+                  </div>
+                  <button class="btn-open-tender-detail" data-id="${t.id}" data-ikn="${t.ikn}">
+                    İncele <i class="ri-arrow-right-s-line"></i>
+                  </button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      ` : ''}
+    `;
+
+    // Kaldır butonu
+    const btnRemove = card.querySelector('.btn-remove-tracked');
+    if (btnRemove) {
+      btnRemove.addEventListener('click', (e) => {
+        e.stopPropagation();
+        removeTrackedCompany(companyName);
+      });
+    }
+
+    // Katıldığı ihaleler toggle butonu
+    const btnPartToggle = card.querySelector('.participated-tenders-toggle-btn');
+    if (btnPartToggle) {
+      btnPartToggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const targetId = btnPartToggle.dataset.target;
+        const targetList = card.querySelector(`#${targetId}`);
+        if (targetList) {
+          const isOpen = targetList.classList.toggle('open');
+          btnPartToggle.querySelector('i:last-child').style.transform = isOpen ? 'rotate(180deg)' : '';
+        }
+      });
+    }
+
+    // Detay butonları
+    card.querySelectorAll('.btn-open-tender-detail').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const id = btn.dataset.id;
+        const ikn = btn.dataset.ikn;
+        const tender = AppState.winningCompanies.find(w => w.id === id || w.ikn === ikn) ||
+                       AppState.upcomingTenders.find(u => u.id === id || u.ikn === ikn);
+        if (tender) {
+          if (tender.bidders) openWinnerDetail(tender);
+          else openTenderDetail(tender);
+        }
+      });
+    });
+
+    container.appendChild(card);
+  });
+}
+
+/**
+ * Katılan Tüm Firmalar Dizinini ve Takip Portföyünü Render Eder (Firma Profili Sekmesi)
  */
 function renderCompaniesIndex() {
+  populateCompaniesDatalist();
+  updateCompanyViewModeUI();
+
+  // 1. Takip Edilen Firmalar Portföyünü Render Et
+  renderTrackedCompanies();
+
+  // 2. Genel Firma Dizini Listesini Render Et
   const container = DOM.companiesCardsList;
+  if (!container) return;
   container.innerHTML = '';
 
   let list = AppState.allCompanies;
@@ -761,6 +1119,7 @@ function renderCompaniesIndex() {
   }
 
   DOM.companiesBadgeCount.textContent = `${list.length} Firma`;
+  if (DOM.allCompaniesCountPill) DOM.allCompaniesCountPill.textContent = list.length;
 
   if (list.length === 0) {
     container.innerHTML = `
@@ -779,6 +1138,8 @@ function renderCompaniesIndex() {
     const winRate = c.participated_count > 0 
       ? Math.round((c.won_count / c.participated_count) * 100) 
       : 0;
+
+    const isTracked = AppState.trackedCompanies.includes(c.name);
 
     card.innerHTML = `
       <div class="card-summary-header">
@@ -818,15 +1179,15 @@ function renderCompaniesIndex() {
 
       <div class="card-expandable-content">
         <div style="font-size: 0.72rem; color: var(--text-secondary);">
-          <strong>Son İhale Hareketleri:</strong>
+          <strong style="color: #0f172a; display: block; margin-bottom: 4px;">Tüm İhale Katılımları (${c.tenders.length} İhale):</strong>
           <ul style="margin: 4px 0 0 16px; font-size: 0.68rem; color: var(--text-muted); line-height: 1.4;">
-            ${c.tenders.slice(0, 3).map(t => `
+            ${c.tenders.map(t => `
               <li style="margin-bottom: 6px;">
                 <div>
-                  <span style="color: ${t.is_winner ? 'var(--success-emerald)' : 'var(--text-secondary)'}; font-weight: 600;">
+                  <span style="color: ${t.is_winner ? 'var(--success-emerald)' : 'var(--text-secondary)'}; font-weight: 700;">
                     ${t.is_winner ? '🏆 Kazandı' : `🥈 ${t.rank}. Teklif`}:
                   </span>
-                  ${t.title.slice(0, 48)}... (${t.bid_str})
+                  ${t.title} (${t.bid_str})
                 </div>
                 <div class="company-tender-dates">
                   <span><i class="ri-calendar-line"></i> İhale: <strong>${t.tender_date_str || '-'}</strong></span>
@@ -836,9 +1197,13 @@ function renderCompaniesIndex() {
             `).join('')}
           </ul>
         </div>
-        <div style="margin-top: 10px; text-align: right;">
+        <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+          <button class="btn-track-this-company" data-name="${c.name}">
+            <i class="${isTracked ? 'ri-checkbox-circle-fill' : 'ri-user-star-line'}"></i>
+            <span>${isTracked ? 'Takip Listenizde' : 'Takip Portföyüme Ekle'}</span>
+          </button>
           <button class="company-filter-action-btn" style="background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; padding: 4px 10px; border-radius: 6px; font-size: 0.72rem; font-weight: 700; cursor: pointer;">
-            <i class="ri-search-line"></i> Bu Firmanın İhalelerini Listele
+            <i class="ri-search-line"></i> İhalelerini Listele
           </button>
         </div>
       </div>
@@ -851,6 +1216,15 @@ function renderCompaniesIndex() {
       }
       card.classList.toggle('expanded');
     });
+
+    // Takibe Ekle Butonu
+    const trackBtn = card.querySelector('.btn-track-this-company');
+    if (trackBtn) {
+      trackBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        addTrackedCompany(c.name);
+      });
+    }
 
     const filterBtn = card.querySelector('.company-filter-action-btn');
     if (filterBtn) {

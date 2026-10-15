@@ -2255,3 +2255,468 @@ body:not(.mobile-frame-active) .bottom-nav-bar {
     padding-bottom: var(--nav-height) !important;
   }
 }
+
+/* ============================================================
+   ÖZEL FİRMA TAKİP PORTFÖYÜ VE ALDIĞI İHALELER LİSTESİ STİLLERİ
+   ============================================================ */
+.company-view-mode-bar {
+  display: flex;
+  gap: 6px;
+  background: #f1f5f9;
+  padding: 4px;
+  border-radius: 12px;
+  margin-bottom: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.company-view-btn {
+  flex: 1;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #64748b;
+  background: transparent;
+}
+
+.company-view-btn.active {
+  background: #ffffff;
+  color: #1d4ed8;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+}
+
+.mode-pill-count {
+  font-size: 0.65rem;
+  padding: 1px 6px;
+  border-radius: 10px;
+  background: #e2e8f0;
+  color: #475569;
+}
+
+.company-view-btn.active .mode-pill-count {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+/* FİRMA EKLEME PANELİ */
+.add-company-panel {
+  background: linear-gradient(135deg, #ffffff 0%, #f0f7ff 100%);
+  border: 1px solid #bfdbfe;
+  border-radius: 14px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+  box-shadow: 0 4px 16px rgba(37, 99, 235, 0.06);
+}
+
+.add-company-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.add-company-header-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #dbeafe;
+  color: #1d4ed8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  flex-shrink: 0;
+}
+
+.add-company-input-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.add-company-input-wrap {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.add-company-input-wrap i {
+  position: absolute;
+  left: 10px;
+  color: #94a3b8;
+  font-size: 0.95rem;
+  pointer-events: none;
+}
+
+.add-company-input-wrap input {
+  width: 100%;
+  padding: 9px 12px 9px 34px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  background: #ffffff;
+  color: #0f172a;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.add-company-input-wrap input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.btn-add-company {
+  background: #2563eb;
+  color: #ffffff;
+  border: none;
+  padding: 9px 14px;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.btn-add-company:hover {
+  background: #1d4ed8;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+}
+
+/* HIZLI EKLEME ÇİPLERİ */
+.quick-add-firms-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  overflow: hidden;
+}
+
+.quick-add-lbl {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #64748b;
+  white-space: nowrap;
+}
+
+.quick-add-chips-scroll {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+  scrollbar-width: none;
+}
+
+.quick-chip-btn {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.quick-chip-btn:hover {
+  background: #dbeafe;
+  border-color: #93c5fd;
+  color: #1d4ed8;
+}
+
+/* TAKİP EDİLEN FİRMALAR LİSTESİ */
+.tracked-companies-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.tracked-company-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 14px;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+  transition: all 0.2s ease;
+}
+
+.tracked-company-card:hover {
+  border-color: #93c5fd;
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.06);
+}
+
+.tracked-company-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.tracked-company-title {
+  font-family: var(--font-heading);
+  font-size: 0.96rem;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.3;
+}
+
+.tracked-company-meta {
+  font-size: 0.7rem;
+  color: #64748b;
+  margin-top: 3px;
+}
+
+.btn-remove-tracked {
+  background: #fff1f2;
+  color: #e11d48;
+  border: 1px solid #fecdd3;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.btn-remove-tracked:hover {
+  background: #e11d48;
+  color: #ffffff;
+  border-color: #e11d48;
+}
+
+.tracked-metrics-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin: 10px 0;
+  background: #f8fafc;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.tracked-metric-item {
+  text-align: center;
+}
+
+.tracked-metric-val {
+  font-weight: 800;
+  font-size: 0.9rem;
+  color: #0f172a;
+}
+
+.tracked-metric-lbl {
+  font-size: 0.62rem;
+  color: #64748b;
+}
+
+/* FİRMANIN ALDIĞI İHALELER (KAZANDIĞI SÖZLEŞMELER) LİSTESİ */
+.won-tenders-group {
+  margin-top: 10px;
+}
+
+.won-tenders-title {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #166534;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  background: #f0fdf4;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #bbf7d0;
+}
+
+.won-tender-card {
+  background: #fafafa;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  transition: all 0.2s ease;
+}
+
+.won-tender-card:hover {
+  border-color: #86efac;
+  background: #ffffff;
+  box-shadow: 0 4px 12px rgba(22, 101, 52, 0.08);
+}
+
+.won-tender-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.won-tender-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.35;
+  margin-bottom: 4px;
+}
+
+.won-tender-subline {
+  font-size: 0.68rem;
+  color: #64748b;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.won-tender-prices {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.won-tender-price {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #059669;
+}
+
+.btn-open-tender-detail {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-open-tender-detail:hover {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+/* KATILDIĞI DİĞER İHALELER */
+.participated-tenders-toggle-btn {
+  width: 100%;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #475569;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+  transition: all 0.2s ease;
+}
+
+.participated-tenders-toggle-btn:hover {
+  background: #f1f5f9;
+  color: #1e293b;
+}
+
+.participated-tenders-list {
+  display: none;
+  margin-top: 8px;
+}
+
+.participated-tenders-list.open {
+  display: block;
+}
+
+/* KATILAN TÜM İSTEKLİLER HIZLI ŞERİDİ (İHALE KARTINDA) */
+.card-bidders-quick-strip {
+  margin: 8px 0;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 7px 10px;
+}
+
+.quick-strip-title {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #475569;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 5px;
+}
+
+.bidders-chips-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.bidder-chip {
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.bidder-chip.winner {
+  background: #dcfce7;
+  border-color: #86efac;
+  color: #166534;
+}
+
+.bidder-chip.second {
+  background: #dbeafe;
+  border-color: #93c5fd;
+  color: #1e40af;
+}
+
+.btn-track-this-company {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #93c5fd;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s ease;
+}
+
+.btn-track-this-company:hover {
+  background: #2563eb;
+  color: #ffffff;
+  border-color: #2563eb;
+}

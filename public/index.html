@@ -17,7 +17,7 @@
   <!-- Remix Icon -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css">
 
-  <link rel="stylesheet" href="/css/style.css?v=8">
+  <link rel="stylesheet" href="/css/style.css?v=9">
 </head>
 <body class="mobile-frame-active">
 
@@ -241,12 +241,12 @@
           </div>
         </section>
 
-        <!-- SEKME 3: KATILAN TÜM FİRMALAR DİZİNİ (FİRMA PROFİLİ SORGULAMA) -->
+        <!-- SEKME 3: KATILAN TÜM FİRMALAR DİZİNİ & ÖZEL FİRMA TAKİP PORTFÖYÜ -->
         <section class="tab-panel" id="tabCompanies">
           <div class="section-title-row">
             <div>
-              <h2 class="section-heading">Katılan Firmalar Dizini</h2>
-              <p class="section-subtext">İhalelere teklif veren şirketlerin katılım & kazanma karnesi</p>
+              <h2 class="section-heading">Firmalar & İhale Portföyü</h2>
+              <p class="section-subtext">İstediğiniz firmaları ekleyip aldığı ihaleleri tek liste olarak takip edin</p>
             </div>
             <div style="display: flex; align-items: center; gap: 8px;">
               <button class="toggle-all-cards-btn" id="btnToggleAllCompanies" title="Tüm Kartları Aç / Kapat">
@@ -256,7 +256,62 @@
             </div>
           </div>
 
-          <div class="cards-list" id="companiesCardsList">
+          <!-- Görünüm Seçici Switcher: [🎯 Takip Ettiğim Firmalar] & [🏢 Tüm Firma Dizini] -->
+          <div class="company-view-mode-bar">
+            <button class="company-view-btn active" id="btnViewTrackedCompanies" data-view="tracked">
+              <i class="ri-user-star-line"></i> <span>Takip Ettiğim Firmalar & İhaleleri</span>
+              <span class="mode-pill-count" id="trackedCompaniesCountPill">3</span>
+            </button>
+            <button class="company-view-btn" id="btnViewAllCompanies" data-view="directory">
+              <i class="ri-building-line"></i> <span>Tüm Firma Dizini</span>
+              <span class="mode-pill-count" id="allCompaniesCountPill">0</span>
+            </button>
+          </div>
+
+          <!-- FİRMA EKLEME KARTI -->
+          <div class="add-company-panel" id="addCompanyPanel">
+            <div class="add-company-panel-header">
+              <div class="add-company-header-icon"><i class="ri-add-circle-line"></i></div>
+              <div>
+                <strong style="font-size: 0.85rem; color: #0f172a;">Takip Etmek İstediğiniz Firmayı Ekleyin</strong>
+                <div style="font-size: 0.7rem; color: #64748b;">Eklediğiniz her firmanın kazandığı tüm ihaleler aşağıda firma adı altında tek liste olarak sunulur.</div>
+              </div>
+            </div>
+
+            <div class="add-company-input-row">
+              <div class="add-company-input-wrap">
+                <i class="ri-search-line"></i>
+                <input type="text" id="inputTrackCompany" list="trackedCompaniesDatalist" placeholder="Firma adı yazın (örn: Girişim Elektrik, Astor, Europower, Kontrolmatik)..." autocomplete="off">
+                <datalist id="trackedCompaniesDatalist"></datalist>
+              </div>
+              <button class="btn-add-company" id="btnAddCompanyAction">
+                <i class="ri-add-line"></i> <span>Firma Ekle</span>
+              </button>
+            </div>
+
+            <!-- Hızlı Ekleme Çipleri -->
+            <div class="quick-add-firms-wrap">
+              <span class="quick-add-lbl">Hızlı Ekle:</span>
+              <div class="quick-add-chips-scroll" id="quickAddChipsContainer">
+                <button class="quick-chip-btn" data-name="Girişim Elektrik Sanayi Taahhüt ve Ticaret A.Ş. (GESAN)">+ GESAN (Girişim)</button>
+                <button class="quick-chip-btn" data-name="Europower Enerji ve Otomasyon Teknolojileri A.Ş. (EUPWR)">+ Europower Enerji</button>
+                <button class="quick-chip-btn" data-name="Astor Enerji A.Ş. (ASTOR)">+ Astor Enerji</button>
+                <button class="quick-chip-btn" data-name="Kontrolmatik Teknoloji Enerji ve Mühendislik A.Ş. (KONTR)">+ Kontrolmatik</button>
+                <button class="quick-chip-btn" data-name="Peak PV Solar Teknolojileri A.Ş.">+ Peak PV Solar</button>
+                <button class="quick-chip-btn" data-name="YEO Teknoloji Enerji ve Endüstri A.Ş. (YEOTK)">+ YEO Teknoloji</button>
+                <button class="quick-chip-btn" data-name="Siemens Sanayi ve Ticaret A.Ş.">+ Siemens</button>
+                <button class="quick-chip-btn" data-name="Best Elektromekanik Sanayi Tesisleri A.Ş.">+ Best Trafo</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAKİP EDİLEN FİRMALARIN VE İHALELERİNİN LİSTESİ (TEK LİSTE FİRMA ADI ALTINDA) -->
+          <div class="tracked-companies-list" id="trackedCompaniesList">
+            <!-- Dinamik doldurulacak -->
+          </div>
+
+          <!-- TÜM FİRMA DİZİNİ (DİZİN GÖRÜNÜMÜ - GEREKTİĞİNDE GÖSTERİLİR) -->
+          <div class="cards-list" id="companiesCardsList" style="display: none;">
             <!-- Firmalar buraya dinamik listelenecek -->
           </div>
         </section>
@@ -381,6 +436,6 @@
     </main>
   </div>
 
-  <script src="/js/app.js?v=8"></script>
+  <script src="/js/app.js?v=9"></script>
 </body>
 </html>

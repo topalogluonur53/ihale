@@ -3394,6 +3394,30 @@ const winningCompanies = [
         status: "valid",
         status_label: "✅ Geçerli Teklif",
         notes: "Geçerli teklif."
+      },
+      {
+        rank: 6,
+        company_name: "Nurol İnşaat ve Ticaret A.Ş.",
+        tax_id: "6320019482",
+        city: "Ankara",
+        bid_amount: 975000000,
+        bid_amount_str: "975.000.000 ₺",
+        discount_percentage: 1.52,
+        status: "valid",
+        status_label: "✅ Geçerli Teklif",
+        notes: "Geçerli teklif."
+      },
+      {
+        rank: 7,
+        company_name: "Alarko Taahhüt Grubu A.Ş.",
+        tax_id: "0490018241",
+        city: "İstanbul",
+        bid_amount: 984000000,
+        bid_amount_str: "984.000.000 ₺",
+        discount_percentage: 0.61,
+        status: "valid",
+        status_label: "✅ Geçerli Teklif",
+        notes: "Geçerli teklif."
       }
     ]
   },

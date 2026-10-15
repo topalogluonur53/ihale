@@ -280,80 +280,193 @@ function getWinningCompanies(query = {}) {
 }
 
 /**
+ * Firma İsimlerini ve Vergi Numaralarını Kanonik Standart İsimle Eşler
+ */
+function getCanonicalCompany(name, tax_id) {
+  const norm = normalizeQuery(name || '');
+  if (tax_id === '7250918241' || norm.includes('peak pv') || norm.includes('peak')) {
+    return { name: "Peak PV Solar Teknolojileri A.Ş.", tax_id: "7250918241", city: "Ankara" };
+  }
+  if (tax_id === '3960074521' || norm.includes('girisim') || norm.includes('gesan')) {
+    return { name: "Girişim Elektrik Sanayi Taahhüt ve Ticaret A.Ş. (GESAN)", tax_id: "3960074521", city: "Ankara" };
+  }
+  if (tax_id === '3810482914' || norm.includes('europower') || norm.includes('eupwr')) {
+    return { name: "Europower Enerji ve Otomasyon Teknolojileri A.Ş. (EUPWR)", tax_id: "3810482914", city: "Ankara" };
+  }
+  if (tax_id === '0910048291' || norm.includes('astor')) {
+    return { name: "Astor Enerji A.Ş. (ASTOR)", tax_id: "0910048291", city: "Ankara" };
+  }
+  if (tax_id === '5770512841' || norm.includes('kontrolmatik') || norm.includes('kontr')) {
+    return { name: "Kontrolmatik Teknoloji Enerji ve Mühendislik A.Ş. (KONTR)", tax_id: "5770512841", city: "İstanbul" };
+  }
+  if (tax_id === '9480029314' || norm.includes('yeo') || norm.includes('yeotk')) {
+    return { name: "YEO Teknoloji Enerji ve Endüstri A.Ş. (YEOTK)", tax_id: "9480029314", city: "İstanbul" };
+  }
+  if (tax_id === '7250918241' || norm.includes('peak pv') || norm.includes('peak')) {
+    return { name: "Peak PV Solar Teknolojileri A.Ş.", tax_id: "7250918241", city: "Ankara" };
+  }
+  if (tax_id === '7700052314' || norm.includes('siemens')) {
+    return { name: "Siemens Sanayi ve Ticaret A.Ş.", tax_id: "7700052314", city: "İstanbul" };
+  }
+  if (tax_id === '1650019284' || norm.includes('best elektro') || norm.includes('best trafo')) {
+    return { name: "Best Elektromekanik Sanayi Tesisleri A.Ş.", tax_id: "1650019284", city: "Balıkesir" };
+  }
+  if (tax_id === '0010029314' || norm.includes('abb elektrik')) {
+    return { name: "ABB Elektrik Sanayi A.Ş.", tax_id: "0010029314", city: "İstanbul" };
+  }
+  if (tax_id === '7580019284' || norm.includes('schneider')) {
+    return { name: "Schneider Elektrik Sanayi ve Ticaret A.Ş.", tax_id: "7580019284", city: "İstanbul" };
+  }
+  if (tax_id === '4930023415' || norm.includes('kalyon')) {
+    return { name: "Kalyon İnşaat Sanayi ve Ticaret A.Ş.", tax_id: "4930023415", city: "İstanbul" };
+  }
+  if (tax_id === '2060018491' || norm.includes('cengiz')) {
+    return { name: "Cengiz İnşaat Sanayi ve Ticaret A.Ş.", tax_id: "2060018491", city: "İstanbul" };
+  }
+  if (tax_id === '6080019482' || norm.includes('limak')) {
+    return { name: "Limak İnşaat Sanayi ve Ticaret A.Ş.", tax_id: "6080019482", city: "Ankara" };
+  }
+  if (tax_id === '4210049281' || norm.includes('gulermak')) {
+    return { name: "Gülermak Ağır Sanayi İnşaat ve Taahhüt A.Ş.", tax_id: "4210049281", city: "Ankara" };
+  }
+  if (tax_id === '3100018492' || norm.includes('dogus')) {
+    return { name: "Doğuş İnşaat ve Ticaret A.Ş.", tax_id: "3100018492", city: "İstanbul" };
+  }
+  if (tax_id === '6110029384' || norm.includes('makyol')) {
+    return { name: "Makyol İnşaat Sanayi Turizm ve Ticaret A.Ş.", tax_id: "6110029384", city: "İstanbul" };
+  }
+  if (tax_id === '5740029314' || norm.includes('kolin')) {
+    return { name: "Kolin İnşaat Turizm Sanayi ve Ticaret A.Ş.", tax_id: "5740029314", city: "Ankara" };
+  }
+  if (tax_id === '9980018241' || norm.includes('zrd')) {
+    return { name: "ZRD Mühendislik & Elektrik İnşaat A.Ş.", tax_id: "9980018241", city: "Ankara" };
+  }
+  if (tax_id === '1660381920' || norm.includes('betas')) {
+    return { name: "BETAŞ Transformatör & İnşaat Taahhüt A.Ş.", tax_id: "1660381920", city: "Adana" };
+  }
+  return { name: (name || '').trim(), tax_id: tax_id || '', city: '' };
+}
+
+/**
  * Katılan ve Kazanan Tüm Firmalar Dizini (Directory)
  */
 function getAllCompaniesIndex() {
   const map = {};
 
   winnersDb.forEach(w => {
-    // Kazanan
-    if (!map[w.winner_company]) {
-      map[w.winner_company] = {
-        name: w.winner_company,
-        city: w.winner_city,
-        tax_id: w.winner_tax_id,
+    // Kazanan Firma
+    const winnerCanon = getCanonicalCompany(w.winner_company, w.winner_tax_id);
+    const wKey = winnerCanon.name;
+
+    if (!map[wKey]) {
+      map[wKey] = {
+        name: winnerCanon.name,
+        city: winnerCanon.city || w.winner_city,
+        tax_id: winnerCanon.tax_id || w.winner_tax_id,
         won_count: 0,
         participated_count: 0,
         total_won_amount: 0,
+        won_tenders: [],
         tenders: []
       };
     }
-    map[w.winner_company].won_count += 1;
-    map[w.winner_company].participated_count += 1;
-    map[w.winner_company].total_won_amount += w.contract_amount;
-    map[w.winner_company].tenders.push({
+    map[wKey].won_count += 1;
+    map[wKey].participated_count += 1;
+    map[wKey].total_won_amount += (w.contract_amount || 0);
+
+    const tenderObj = {
+      id: w.id,
       ikn: w.ikn,
       title: w.title,
       authority: w.authority,
+      city: w.city,
       is_winner: true,
       rank: 1,
+      bid_amount: w.contract_amount,
       bid_str: w.contract_amount_str,
+      discount_percentage: w.discount_percentage,
+      status_label: "🏆 1. Kazandı (Yüklenici)",
       contract_date: w.contract_date,
       contract_date_str: w.contract_date_str || w.contract_date,
       tender_date_str: w.tender_date_str || w.tender_date,
-      announcement_date_str: w.announcement_date_str || w.announcement_date
-    });
+      announcement_date_str: w.announcement_date_str || w.announcement_date,
+      estimated_cost_str: w.estimated_cost_str
+    };
+
+    map[wKey].tenders.push(tenderObj);
+    map[wKey].won_tenders.push(tenderObj);
 
     // Katılan diğer firmalar
     if (w.bidders) {
       w.bidders.forEach(b => {
-        if (b.company_name === w.winner_company) return;
-        if (!map[b.company_name]) {
-          map[b.company_name] = {
-            name: b.company_name,
-            city: b.city || 'Belirtilmedi',
-            tax_id: b.tax_id || '',
+        const bidderCanon = getCanonicalCompany(b.company_name, b.tax_id);
+        const bKey = bidderCanon.name;
+
+        // Kazanan olarak zaten eklenmişse çift ekleme
+        if (bKey === wKey) return;
+
+        if (!map[bKey]) {
+          map[bKey] = {
+            name: bidderCanon.name,
+            city: bidderCanon.city || b.city || 'Belirtilmedi',
+            tax_id: bidderCanon.tax_id || b.tax_id || '',
             won_count: 0,
             participated_count: 0,
             total_won_amount: 0,
+            won_tenders: [],
             tenders: []
           };
         }
-        map[b.company_name].participated_count += 1;
-        map[b.company_name].tenders.push({
+        map[bKey].participated_count += 1;
+        map[bKey].tenders.push({
+          id: w.id,
           ikn: w.ikn,
           title: w.title,
           authority: w.authority,
+          city: w.city,
           is_winner: false,
           rank: b.rank,
+          bid_amount: b.bid_amount,
           bid_str: b.bid_amount_str,
-          status_label: b.status_label,
+          discount_percentage: b.discount_percentage,
+          status_label: b.status_label || (b.rank === 2 ? '🥈 2. Teklif' : `${b.rank}. Sıra`),
           contract_date: w.contract_date,
           contract_date_str: w.contract_date_str || w.contract_date,
           tender_date_str: w.tender_date_str || w.tender_date,
-          announcement_date_str: w.announcement_date_str || w.announcement_date
+          announcement_date_str: w.announcement_date_str || w.announcement_date,
+          estimated_cost_str: w.estimated_cost_str
         });
       });
     }
   });
 
-  // Girişim Elektrik, Europower Enerji ve Peak PV'yi öne çıkar
-  const priorityCompanies = ['Girişim Elektrik', 'Europower Enerji', 'Peak PV Solar', 'Astor Enerji', 'Kontrolmatik'];
-  
-  return Object.values(map).sort((a, b) => {
+  // Şirket verilerini formatlayıp sırala
+  const list = Object.values(map).map(c => {
+    // İhaleleri kazandıklarını en başa, sonra tarihe göre sırala
+    c.tenders.sort((a, b) => {
+      if (a.is_winner && !b.is_winner) return -1;
+      if (!a.is_winner && b.is_winner) return 1;
+      return new Date(b.contract_date || '2026-01-01') - new Date(a.contract_date || '2026-01-01');
+    });
+    c.won_tenders.sort((a, b) => new Date(b.contract_date || '2026-01-01') - new Date(a.contract_date || '2026-01-01'));
+
+    c.total_won_amount_str = c.total_won_amount >= 1000000000
+      ? `${(c.total_won_amount / 1000000000).toFixed(2)} Milyar ₺`
+      : c.total_won_amount > 0
+      ? `${(c.total_won_amount / 1000000).toFixed(1)} Milyon ₺`
+      : '0 ₺';
+
+    return c;
+  });
+
+  // Girişim Elektrik, Europower Enerji, Astor, Kontrolmatik ve Peak PV'yi öne çıkar
+  const priorityCompanies = ['Girişim Elektrik', 'Europower Enerji', 'Astor Enerji', 'Kontrolmatik', 'Peak PV Solar'];
+
+  return list.sort((a, b) => {
     const aPri = priorityCompanies.some(p => a.name.includes(p)) ? 1 : 0;
     const bPri = priorityCompanies.some(p => b.name.includes(p)) ? 1 : 0;
     if (aPri !== bPri) return bPri - aPri;
+    if (b.won_count !== a.won_count) return b.won_count - a.won_count;
     return b.participated_count - a.participated_count;
   });
 }
@@ -370,18 +483,21 @@ function getTopWinnersAnalytics() {
     totalContractVolume += w.contract_amount;
     totalEstimatedCost += w.estimated_cost;
 
-    if (!companyMap[w.winner_company]) {
-      companyMap[w.winner_company] = {
-        name: w.winner_company,
-        city: w.winner_city,
-        tax_id: w.winner_tax_id,
+    const canon = getCanonicalCompany(w.winner_company, w.winner_tax_id);
+    const key = canon.name;
+
+    if (!companyMap[key]) {
+      companyMap[key] = {
+        name: canon.name,
+        city: canon.city || w.winner_city,
+        tax_id: canon.tax_id || w.winner_tax_id,
         won_tenders_count: 0,
         total_amount: 0,
         discounts: [],
         sectors: new Set()
       };
     }
-    const c = companyMap[w.winner_company];
+    const c = companyMap[key];
     c.won_tenders_count += 1;
     c.total_amount += w.contract_amount;
     c.discounts.push(w.discount_percentage);
