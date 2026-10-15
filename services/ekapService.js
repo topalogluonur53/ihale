@@ -1,7 +1,21 @@
 const { upcomingTenders, winningCompanies } = require('./mockData');
+const { radarEngine, REAL_ITM_TENDERS_FEED, REAL_UPCOMING_ITM_FEED } = require('./radarScanner');
+
+// Veritabanını Başlangıçta Tüm Gerçek İTM İhaleleri ile Birlikte Başlat
+let winnersDb = [...winningCompanies];
+REAL_ITM_TENDERS_FEED.forEach(t => {
+  if (!winnersDb.some(w => w.id === t.id || w.ikn === t.ikn)) {
+    winnersDb.unshift(t);
+  }
+});
 
 let tendersDb = [...upcomingTenders];
-let winnersDb = [...winningCompanies];
+REAL_UPCOMING_ITM_FEED.forEach(t => {
+  if (!tendersDb.some(u => u.id === t.id || u.ikn === t.ikn)) {
+    tendersDb.unshift(t);
+  }
+});
+
 let lastSyncTime = new Date().toISOString();
 
 /**
@@ -451,15 +465,45 @@ function addUpcomingTender(tender) {
   return newTender;
 }
 
+function injectWinnerTender(tender) {
+  if (!winnersDb.some(w => w.id === tender.id || w.ikn === tender.ikn)) {
+    winnersDb.unshift(tender);
+    return true;
+  }
+  return false;
+}
+
+function injectUpcomingTender(tender) {
+  if (!tendersDb.some(u => u.id === tender.id || u.ikn === tender.ikn)) {
+    tendersDb.unshift(tender);
+    return true;
+  }
+  return false;
+}
+
 async function syncLiveFromEKAP() {
+  const serviceAdapter = {
+    getWinningCompanies: () => winnersDb,
+    getUpcomingTenders: () => tendersDb,
+    injectWinnerTender,
+    injectUpcomingTender
+  };
+  const scanResult = await radarEngine.runDeepScan(serviceAdapter);
   lastSyncTime = new Date().toISOString();
   return {
     success: true,
-    message: 'TEİAŞ, TEDAŞ ve EKAP trafo merkezi veri tabanı güncellendi.',
-    total_count: tendersDb.length,
+    message: scanResult.message || 'Canlı ihale radarı taramasını tamamladı.',
+    scan_details: scanResult,
+    total_winners: winnersDb.length,
+    total_upcoming: tendersDb.length,
     sync_time: lastSyncTime
   };
 }
+
+// 7/24 Kesintisiz Arka Plan Taraması (Her 15 Dakikada Bir Otomatik Çalışır)
+setInterval(() => {
+  syncLiveFromEKAP().catch(err => console.error('Radar periyodik tarama hatası:', err.message));
+}, 15 * 60 * 1000);
 
 module.exports = {
   syncLiveFromEKAP,
@@ -467,5 +511,9 @@ module.exports = {
   getWinningCompanies,
   getAllCompaniesIndex,
   getTopWinnersAnalytics,
-  addUpcomingTender
+  addUpcomingTender,
+  injectWinnerTender,
+  injectUpcomingTender,
+  radarEngine
 };
+

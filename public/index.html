@@ -24,11 +24,14 @@
   <!-- Desktop Kontrol Çubuğu -->
   <div class="desktop-top-bar" id="desktopControlBar">
     <div class="desktop-bar-left">
-      <span class="desktop-badge"><i class="ri-article-line"></i> KİK & EKAP İhale Takip Portalı</span>
+      <span class="desktop-badge"><i class="ri-radar-line"></i> TEİAŞ & EKAP & KAP İhale Radarı</span>
       <span class="live-dot-pulse"></span>
-      <span class="sync-status" id="headerSyncStatus">Katılan & Kazananlar Aktif</span>
+      <span class="sync-status" id="headerSyncStatus">7/24 Canlı Radar Taraması Aktif</span>
     </div>
     <div class="desktop-bar-right">
+      <button class="top-bar-toggle-btn" id="btnDesktopLiveScan" title="Tüm TEİAŞ, TEDAŞ, EDAŞ ve KAP İhalelerini Canlı Tara">
+        <i class="ri-radar-line"></i> <span>Canlı Radarı Tara</span>
+      </button>
       <button class="top-bar-toggle-btn" id="btnToggleMainTopBar" title="Üst Menü Barını Gizle / Aç">
         <i class="ri-arrow-up-s-line" id="mainTopBarToggleIcon"></i> <span id="mainTopBarToggleText">Üst Menüyü Gizle</span>
       </button>
@@ -80,8 +83,8 @@
             <button class="icon-btn" id="btnToggleMobileTopBar" title="Üst Menüyü Gizle / Alanı Genişlet">
               <i class="ri-arrow-up-s-line"></i>
             </button>
-            <button class="icon-btn sync-btn" id="btnSyncLive" title="KİK'ten Canlı Veri Çek">
-              <i class="ri-refresh-line" id="syncIcon"></i>
+            <button class="icon-btn sync-btn" id="btnSyncLive" title="TEİAŞ, KAP ve EKAP'tan Canlı İhaleleri Tara">
+              <i class="ri-radar-line" id="syncIcon"></i>
             </button>
             <button class="icon-btn" id="btnExportAll" title="Excel / JSON Dışa Aktar">
               <i class="ri-download-2-line"></i>
@@ -103,8 +106,12 @@
         <!-- Hızlı Kategori & Firma Kısayolları -->
         <div class="quick-tags-scroller">
           <button class="quick-tag-btn" data-search="trafo"><i class="ri-flashlight-fill"></i> Trafo Merkezleri</button>
+          <button class="quick-tag-btn" data-search="İTM"><i class="ri-radar-fill"></i> TEİAŞ İTM Serisi</button>
+          <button class="quick-tag-btn" data-search="çukurca"><i class="ri-map-pin-2-fill"></i> Çukurca TM</button>
           <button class="quick-tag-btn" data-search="girişim elektrik"><i class="ri-building-line"></i> Girişim Elektrik (GESAN)</button>
           <button class="quick-tag-btn" data-search="europower"><i class="ri-cpu-line"></i> Europower Enerji (EUPWR)</button>
+          <button class="quick-tag-btn" data-search="astor"><i class="ri-shield-flash-line"></i> Astor Enerji (ASTOR)</button>
+          <button class="quick-tag-btn" data-search="kontrolmatik"><i class="ri-settings-4-line"></i> Kontrolmatik (KONTR)</button>
           <button class="quick-tag-btn" data-search="peak pv"><i class="ri-sun-line"></i> Peak PV Solar</button>
           <button class="quick-tag-btn" data-search="teiaş"><i class="ri-government-line"></i> TEİAŞ / TEDAŞ</button>
         </div>
@@ -374,6 +381,6 @@
     </main>
   </div>
 
-  <script src="/js/app.js?v=6"></script>
+  <script src="/js/app.js?v=7"></script>
 </body>
 </html>

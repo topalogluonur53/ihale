@@ -7,7 +7,8 @@ const {
   getWinningCompanies,
   getAllCompaniesIndex,
   getTopWinnersAnalytics,
-  addUpcomingTender
+  addUpcomingTender,
+  radarEngine
 } = require('./services/ekapService');
 
 const app = express();
@@ -87,8 +88,25 @@ app.get('/api/analytics', (req, res) => {
   }
 });
 
-// KİK / EKAP Canlı Senkronizasyon Tetikleme
+// KİK / EKAP / KAP Canlı Radar Senkronizasyon Tetikleme
 app.post('/api/sync', async (req, res) => {
+  try {
+    const result = await syncLiveFromEKAP();
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Canlı İhale Radarı Durumu ve Tarama Endpointleri
+app.get('/api/radar/status', (req, res) => {
+  res.json({
+    success: true,
+    ...radarEngine.getRadarStatus()
+  });
+});
+
+app.post('/api/radar/scan', async (req, res) => {
   try {
     const result = await syncLiveFromEKAP();
     res.json(result);

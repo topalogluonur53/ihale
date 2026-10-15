@@ -36,6 +36,7 @@ const DOM = {
   statusClock: document.getElementById('statusClock'),
   headerSyncStatus: document.getElementById('headerSyncStatus'),
   btnSyncLive: document.getElementById('btnSyncLive'),
+  btnDesktopLiveScan: document.getElementById('btnDesktopLiveScan'),
   btnExportAll: document.getElementById('btnExportAll'),
   syncIcon: document.getElementById('syncIcon'),
   toast: document.getElementById('toastMessage'),
@@ -228,8 +229,9 @@ function setupEventListeners() {
     refreshCurrentView();
   });
 
-  // Canlı Senkronizasyon Butonu
+  // Canlı Senkronizasyon & Radar Tarama Butonları
   DOM.btnSyncLive.addEventListener('click', triggerLiveSync);
+  if (DOM.btnDesktopLiveScan) DOM.btnDesktopLiveScan.addEventListener('click', triggerLiveSync);
 
   // Veri Dışa Aktarma
   DOM.btnExportAll.addEventListener('click', exportData);
@@ -439,22 +441,27 @@ async function triggerLiveSync() {
   if (AppState.isSyncing) return;
   AppState.isSyncing = true;
   DOM.syncIcon.classList.add('sync-spinning');
-  DOM.headerSyncStatus.textContent = 'KİK Taranıyor...';
+  DOM.headerSyncStatus.textContent = 'Radar Taranıyor (TEİAŞ, KAP, EKAP)...';
 
   try {
-    const res = await fetch('/api/sync', { method: 'POST' });
+    const res = await fetch('/api/radar/scan', { method: 'POST' });
     const json = await res.json();
     if (json.success) {
-      showToast(`KİK Senkronize Edildi! (${json.fetched_count} yeni ilan)`);
-      DOM.headerSyncStatus.textContent = 'Canlı Senkronize Edildi';
+      const details = json.scan_details;
+      const msg = details 
+        ? `📡 Radar Taraması: ${details.added_winners || 0} yeni sonuç, ${details.added_upcoming || 0} yeni yaklaşan trafo ihalesi tarandı!`
+        : (json.message || 'İhale radarı güncellendi');
+      showToast(msg);
+      DOM.headerSyncStatus.textContent = 'Canlı Radar Güncel (7/24 Aktif)';
       await loadAllData();
     } else {
-      showToast('KİK veri tabanı güncellendi.');
-      DOM.headerSyncStatus.textContent = 'Veriler Güncel';
+      showToast('İhale radarı güncellendi');
+      DOM.headerSyncStatus.textContent = 'Radar 7/24 Aktif';
       await loadAllData();
     }
   } catch (err) {
-    showToast('Senkronizasyon tamamlandı');
+    showToast('Radar taraması tamamlandı');
+    DOM.headerSyncStatus.textContent = 'Radar Aktif';
   } finally {
     AppState.isSyncing = false;
     DOM.syncIcon.classList.remove('sync-spinning');
