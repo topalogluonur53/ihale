@@ -8,6 +8,7 @@ const {
   getAllCompaniesIndex,
   getTopWinnersAnalytics,
   addUpcomingTender,
+  getFiltersMeta,
   radarEngine
 } = require('./services/ekapService');
 
@@ -15,7 +16,7 @@ const app = express();
 const PORT = process.env.PORT || 3050;
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '100kb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Yaklaşan İhaleler API
@@ -43,7 +44,8 @@ app.post('/api/tenders/upcoming', (req, res) => {
       total_count: getUpcomingTenders().length
     });
   } catch (error) {
-    res.status(400).json({ success: false, error: error.message });
+    const status = error.code === 'DUPLICATE_IKN' ? 409 : 400;
+    res.status(status).json({ success: false, error: error.message });
   }
 });
 
@@ -117,27 +119,14 @@ app.post('/api/radar/scan', async (req, res) => {
 
 // Şehir ve Kurum Grubu Listesi API
 app.get('/api/filters-meta', (req, res) => {
-  const upcoming = getUpcomingTenders();
-  const winners = getWinningCompanies();
-  const cities = new Set();
-  const groups = new Set();
-  
-  upcoming.forEach(u => {
-    if (u.city) cities.add(u.city);
-    if (u.authority_group) groups.add(u.authority_group);
-  });
+  res.json({ success: true, ...getFiltersMeta() });
+});
 
-  winners.forEach(w => {
-    if (w.city) cities.add(w.city);
-    if (w.winner_city) cities.add(w.winner_city);
-    if (w.authority_group) groups.add(w.authority_group);
-  });
-
-  res.json({
-    success: true,
-    cities: Array.from(cities).sort((a, b) => a.localeCompare(b, 'tr')),
-    authority_groups: Array.from(groups).sort((a, b) => a.localeCompare(b, 'tr'))
-  });
+app.use((error, req, res, next) => {
+  if (error instanceof SyntaxError && error.status === 400 && 'body' in error) {
+    return res.status(400).json({ success: false, error: 'Geçersiz JSON gövdesi.' });
+  }
+  next(error);
 });
 
 app.listen(PORT, () => {

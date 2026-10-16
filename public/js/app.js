@@ -39,6 +39,13 @@ const AppState = {
   companyViewMode: 'tracked', // 'tracked' | 'directory'
   quickFilters: JSON.parse(localStorage.getItem('kik_user_quick_filters') || 'null') || [...DEFAULT_QUICK_FILTERS],
   cities: [],
+  requestVersions: {
+    winners: 0,
+    upcoming: 0,
+    companies: 0,
+    analytics: 0,
+    filters: 0
+  },
   isSyncing: false,
   theme: localStorage.getItem('kik_theme') || 'light',
   frameActive: true,
@@ -695,6 +702,7 @@ async function loadAllData() {
 }
 
 async function fetchWinningCompanies() {
+  const requestVersion = ++AppState.requestVersions.winners;
   try {
     const params = new URLSearchParams({
       search: AppState.searchQuery,
@@ -707,19 +715,24 @@ async function fetchWinningCompanies() {
 
     const res = await fetch(`/api/tenders/winners?${params.toString()}`);
     const json = await res.json();
+    if (requestVersion !== AppState.requestVersions.winners) return;
     if (json.success) {
       AppState.winningCompanies = json.data;
       const tfText = AppState.winnersTimeframe === '1year' ? 'Son 1 Yıl' : AppState.winnersTimeframe === '6months' ? 'Son 6 Ay' : AppState.winnersTimeframe === '3months' ? 'Son 3 Ay' : 'Tümü';
       DOM.winnersBadgeCount.textContent = `${json.count} Sonuç (${tfText})`;
       if (DOM.kpiWinnersCount) DOM.kpiWinnersCount.textContent = `${json.count} Sonuç`;
       renderWinningCompanies();
+    } else {
+      throw new Error(json.error || 'Sonuçlar alınamadı.');
     }
   } catch (err) {
+    if (requestVersion !== AppState.requestVersions.winners) return;
     console.error('Sonuçlar alınamadı:', err);
   }
 }
 
 async function fetchUpcomingTenders() {
+  const requestVersion = ++AppState.requestVersions.upcoming;
   try {
     const params = new URLSearchParams({
       search: AppState.searchQuery,
@@ -732,6 +745,7 @@ async function fetchUpcomingTenders() {
 
     const res = await fetch(`/api/tenders/upcoming?${params.toString()}`);
     const json = await res.json();
+    if (requestVersion !== AppState.requestVersions.upcoming) return;
     if (json.success) {
       AppState.upcomingTenders = json.data;
       const tfText = AppState.upcomingTimeframe === '1year' ? 'Gelecek 1 Yıl' :
@@ -744,8 +758,11 @@ async function fetchUpcomingTenders() {
       if (topUpEl) topUpEl.textContent = json.count;
       renderUpcomingTenders();
       if (AppState.currentTab === 'tabFavorites') renderFavorites();
+    } else {
+      throw new Error(json.error || 'Yaklaşan ihaleler alınamadı.');
     }
   } catch (err) {
+    if (requestVersion !== AppState.requestVersions.upcoming) return;
     console.error('Yaklaşan ihaleler alınamadı:', err);
   }
 }
@@ -770,38 +787,50 @@ function updateTimeframeLabels() {
 }
 
 async function fetchCompaniesIndex() {
+  const requestVersion = ++AppState.requestVersions.companies;
   try {
     const res = await fetch('/api/companies');
     const json = await res.json();
+    if (requestVersion !== AppState.requestVersions.companies) return;
     if (json.success) {
       AppState.allCompanies = json.data;
       DOM.companiesBadgeCount.textContent = `${json.count} Firma`;
       if (DOM.kpiParticipantsCount) DOM.kpiParticipantsCount.textContent = `${json.count}+ İstekli`;
       if (AppState.currentTab === 'tabCompanies') renderCompaniesIndex();
+    } else {
+      throw new Error(json.error || 'Firma dizini alınamadı.');
     }
   } catch (err) {
+    if (requestVersion !== AppState.requestVersions.companies) return;
     console.error('Firma dizini alınamadı:', err);
   }
 }
 
 async function fetchAnalytics() {
+  const requestVersion = ++AppState.requestVersions.analytics;
   try {
     const res = await fetch('/api/analytics');
     const json = await res.json();
+    if (requestVersion !== AppState.requestVersions.analytics) return;
     if (json.success) {
       AppState.analyticsData = json.data;
       if (DOM.kpiWinnersVolume) DOM.kpiWinnersVolume.textContent = json.data.total_volume_str;
       renderAnalytics();
+    } else {
+      throw new Error(json.error || 'Analitik verisi alınamadı.');
     }
   } catch (err) {
+    if (requestVersion !== AppState.requestVersions.analytics) return;
     console.error('Analitik alınamadı:', err);
   }
 }
 
 async function fetchFiltersMeta() {
+  const requestVersion = ++AppState.requestVersions.filters;
   try {
     const res = await fetch('/api/filters-meta');
     const json = await res.json();
+    if (requestVersion !== AppState.requestVersions.filters) return;
     if (json.success) {
       if (json.cities) {
         AppState.cities = json.cities;
@@ -812,9 +841,16 @@ async function fetchFiltersMeta() {
           opt.textContent = city;
           DOM.cityFilterSelect.appendChild(opt);
         });
+        DOM.cityFilterSelect.value = AppState.selectedCity;
+        if (DOM.cityFilterSelect.value !== AppState.selectedCity) {
+          AppState.selectedCity = 'all';
+        }
       }
+    } else {
+      throw new Error(json.error || 'Filtre seçenekleri alınamadı.');
     }
   } catch (err) {
+    if (requestVersion !== AppState.requestVersions.filters) return;
     console.error('Filtre metası alınamadı:', err);
   }
 }
@@ -828,7 +864,7 @@ async function triggerLiveSync() {
   try {
     const res = await fetch('/api/radar/scan', { method: 'POST' });
     const json = await res.json();
-    if (json.success) {
+    if (res.ok && json.success) {
       const details = json.scan_details;
       const msg = details 
         ? `📡 Radar Taraması: ${details.added_winners || 0} yeni sonuç, ${details.added_upcoming || 0} yeni yaklaşan trafo ihalesi tarandı!`
@@ -837,13 +873,12 @@ async function triggerLiveSync() {
       DOM.headerSyncStatus.textContent = 'Canlı Radar Güncel (7/24 Aktif)';
       await loadAllData();
     } else {
-      showToast('İhale radarı güncellendi');
-      DOM.headerSyncStatus.textContent = 'Radar 7/24 Aktif';
-      await loadAllData();
+      throw new Error(json.error || 'Radar taraması tamamlanamadı.');
     }
   } catch (err) {
-    showToast('Radar taraması tamamlandı');
-    DOM.headerSyncStatus.textContent = 'Radar Aktif';
+    console.error('Radar taraması başarısız:', err);
+    showToast('Radar taraması başarısız oldu. Lütfen yeniden deneyin.');
+    DOM.headerSyncStatus.textContent = 'Radar bağlantısı yeniden denenecek';
   } finally {
     AppState.isSyncing = false;
     DOM.syncIcon.classList.remove('sync-spinning');

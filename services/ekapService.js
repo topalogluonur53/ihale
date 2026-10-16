@@ -1,20 +1,8 @@
-const { upcomingTenders, winningCompanies } = require('./mockData');
 const { radarEngine, REAL_ITM_TENDERS_FEED, REAL_UPCOMING_ITM_FEED } = require('./radarScanner');
 
-// Veritabanını Başlangıçta Tüm Gerçek İTM İhaleleri ile Birlikte Başlat
-let winnersDb = [...winningCompanies];
-REAL_ITM_TENDERS_FEED.forEach(t => {
-  if (!winnersDb.some(w => w.id === t.id || w.ikn === t.ikn)) {
-    winnersDb.unshift(t);
-  }
-});
-
-let tendersDb = [...upcomingTenders];
-REAL_UPCOMING_ITM_FEED.forEach(t => {
-  if (!tendersDb.some(u => u.id === t.id || u.ikn === t.ikn)) {
-    tendersDb.unshift(t);
-  }
-});
+// Veritabanını SADECE doğrulanmış resmi TEİAŞ, EKAP ve KAP ihaleleri ile başlat (Gerçek dışı/mock veri kaldırıldı)
+let winnersDb = [...REAL_ITM_TENDERS_FEED];
+let tendersDb = [...REAL_UPCOMING_ITM_FEED];
 
 let lastSyncTime = new Date().toISOString();
 
@@ -45,6 +33,11 @@ function normalizeQuery(str) {
 /**
  * Arama sorgusunu akıllı token'lara ayırır ve sektör kısaltmalarını genişletir
  */
+function parseRecordDate(value) {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
 function extractTokens(queryStr) {
   const clean = normalizeQuery(queryStr);
   const rawTokens = clean.split(/\s+/).filter(Boolean);
@@ -68,7 +61,8 @@ function getUpcomingTenders(query = {}) {
   const now = new Date();
 
   let list = tendersDb.map(item => {
-    const tenderDate = new Date(item.tender_date);
+    const tenderDate = parseRecordDate(item.tender_date);
+    if (!tenderDate) return null;
     const diffMs = tenderDate - now;
     const isPast = diffMs < 0;
     const diffHours = Math.floor(Math.abs(diffMs) / (1000 * 60 * 60));
@@ -109,7 +103,7 @@ function getUpcomingTenders(query = {}) {
         minute: '2-digit'
       })
     };
-  });
+  }).filter(Boolean);
 
   // Akıllı Arama Filtresi (Çoklu kelime: TEİAŞ, TM, Girişim, Europower vb.)
   if (search && search.trim()) {
@@ -542,8 +536,19 @@ function getTopWinnersAnalytics() {
 }
 
 function addUpcomingTender(tender) {
+  if (!tender || typeof tender !== 'object' || Array.isArray(tender)) {
+    throw new Error('Geçerli bir ihale kaydı gönderilmelidir.');
+  }
   if (!tender.ikn || !tender.title) {
     throw new Error('İKN ve İhale Başlığı zorunludur.');
+  }
+  if (tendersDb.some(item => item.ikn === tender.ikn)) {
+    const error = new Error('Bu İKN ile kayıtlı bir ihale zaten var.');
+    error.code = 'DUPLICATE_IKN';
+    throw error;
+  }
+  if (tender.tender_date && Number.isNaN(new Date(tender.tender_date).getTime())) {
+    throw new Error('İhale tarihi geçerli bir ISO tarih değeri olmalıdır.');
   }
   const id = tender.id || `ikn-${String(tender.ikn).replace(/[^0-9]/g, '')}-${Date.now()}`;
   const budget = Number(tender.estimated_budget) || 150000000;
@@ -597,6 +602,20 @@ function injectUpcomingTender(tender) {
   return false;
 }
 
+function getFiltersMeta() {
+  const cities = new Set();
+  const groups = new Set();
+  [...tendersDb, ...winnersDb].forEach(item => {
+    if (item.city) cities.add(item.city);
+    if (item.winner_city) cities.add(item.winner_city);
+    if (item.authority_group) groups.add(item.authority_group);
+  });
+  return {
+    cities: Array.from(cities).sort((a, b) => a.localeCompare(b, 'tr')),
+    authority_groups: Array.from(groups).sort((a, b) => a.localeCompare(b, 'tr'))
+  };
+}
+
 async function syncLiveFromEKAP() {
   const serviceAdapter = {
     getWinningCompanies: () => winnersDb,
@@ -617,9 +636,12 @@ async function syncLiveFromEKAP() {
 }
 
 // 7/24 Kesintisiz Arka Plan Taraması (Her 15 Dakikada Bir Otomatik Çalışır)
-setInterval(() => {
+const bgSyncTimer = setInterval(() => {
   syncLiveFromEKAP().catch(err => console.error('Radar periyodik tarama hatası:', err.message));
 }, 15 * 60 * 1000);
+if (bgSyncTimer && typeof bgSyncTimer.unref === 'function') {
+  bgSyncTimer.unref();
+}
 
 module.exports = {
   syncLiveFromEKAP,
@@ -628,8 +650,8 @@ module.exports = {
   getAllCompaniesIndex,
   getTopWinnersAnalytics,
   addUpcomingTender,
+  getFiltersMeta,
   injectWinnerTender,
   injectUpcomingTender,
   radarEngine
 };
-
